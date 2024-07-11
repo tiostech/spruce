@@ -1,12 +1,12 @@
 /*-------------------------------------------------------------------------------
- This file is part of ranger.
+ This file is part of spruce.
 
  Copyright (c) [2014-2018] [Marvin N. Wright]
 
  This software may be modified and distributed under the terms of the MIT license.
 
- Please note that the C++ core of ranger is distributed under MIT license and the
- R package "ranger" under GPL3 license.
+ Please note that the C++ core of spruce is distributed under MIT license and the
+ R package "spruce" under GPL3 license.
  #-------------------------------------------------------------------------------*/
 
 #ifndef DATA_H_
@@ -17,10 +17,9 @@
 #include <numeric>
 #include <random>
 #include <algorithm>
-
 #include "globals.h"
-
-namespace ranger {
+ 
+namespace spruce {
 
 class Data {
 public:
@@ -33,6 +32,8 @@ public:
 
   virtual double get_x(size_t row, size_t col) const = 0;
   virtual double get_y(size_t row, size_t col) const = 0;
+  virtual double get_z(size_t row, size_t col) const = 0;
+  virtual double get_test_x(size_t row, size_t col) const = 0;
 
   size_t getVariableID(const std::string& variable_name) const;
 
@@ -40,6 +41,7 @@ public:
 
   virtual void set_x(size_t col, size_t row, double value, bool& error) = 0;
   virtual void set_y(size_t col, size_t row, double value, bool& error) = 0;
+  virtual void set_z(size_t col, size_t row, double value, bool& error) = 0;
 
   void addSnpData(unsigned char* snp_data, size_t num_cols_snp);
 
@@ -210,7 +212,7 @@ protected:
 
   std::vector<size_t> index_data;
   std::vector<std::vector<double>> unique_data_values;
-  size_t max_num_unique_values;
+  size_t max_num_unique_values; // max unique_values of all columns 
 
   // For each varID true if ordered
   std::vector<bool> is_ordered_variable;
@@ -223,6 +225,6 @@ protected:
   bool order_snps;
 };
 
-} // namespace ranger
+} // namespace spruce
 
 #endif /* DATA_H_ */

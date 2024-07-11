@@ -1,18 +1,18 @@
 /*-------------------------------------------------------------------------------
- This file is part of Ranger.
+ This file is part of spruce.
 
- Ranger is free software: you can redistribute it and/or modify
+ spruce is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Ranger is distributed in the hope that it will be useful,
+spruce is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+along with spruce. If not, see <http://www.gnu.org/licenses/>.
 
 Written by:
 
@@ -87,68 +87,5 @@ Rcpp::NumericMatrix randomObsNode(Rcpp::IntegerMatrix groups, Rcpp::NumericVecto
     }
   }
   return result;
-}
-
-// Recursive function for hierarchical shrinkage (regression)
-//[[Rcpp::export]]
-void hshrink_regr(Rcpp::IntegerVector& left_children, Rcpp::IntegerVector& right_children, 
-                  Rcpp::IntegerVector& num_samples_nodes, Rcpp::NumericVector& node_predictions, 
-                  Rcpp::NumericVector& split_values, double lambda,
-                  size_t nodeID, size_t parent_n, double parent_pred, double cum_sum) {
-  if (nodeID == 0) {
-    // In the root, just use the prediction
-    cum_sum = node_predictions[nodeID];
-  } else {
-    // If not root, use shrinkage formula
-    cum_sum += (node_predictions[nodeID] - parent_pred) / (1 + lambda/parent_n);
-  }
-  
-  if (left_children[nodeID] == 0) {
-    // If leaf, change node prediction in split_values (used for prediction) 
-    split_values[nodeID] = cum_sum;
-  } else {
-    // If not leaf, give weighted prediction to child nodes
-    hshrink_regr(left_children, right_children, num_samples_nodes, node_predictions, split_values, 
-                    lambda, left_children[nodeID], num_samples_nodes[nodeID], node_predictions[nodeID],
-                    cum_sum);
-    hshrink_regr(left_children, right_children, num_samples_nodes, node_predictions, split_values, 
-                    lambda, right_children[nodeID], num_samples_nodes[nodeID], node_predictions[nodeID],
-                    cum_sum);
-  }
-}
-
-// Recursive function for hierarchical shrinkage (probability)
-//[[Rcpp::export]]
-void hshrink_prob(Rcpp::IntegerVector& left_children, Rcpp::IntegerVector& right_children, 
-                  Rcpp::IntegerVector& num_samples_nodes, 
-                  Rcpp::NumericMatrix& class_freq, double lambda,
-                  size_t nodeID, size_t parent_n, Rcpp::NumericVector parent_pred, Rcpp::NumericVector cum_sum) {
-  
-  if (nodeID == 0) {
-    // In the root, just use the prediction
-    cum_sum = class_freq(nodeID, Rcpp::_);
-  } else {
-    // If not root, use shrinkage formula
-    cum_sum += (class_freq(nodeID, Rcpp::_) - parent_pred) / (1 + lambda/parent_n);
-  }
-  
-  if (left_children[nodeID] == 0) {
-    // If leaf, change node prediction in split_values (used for prediction) 
-    class_freq(nodeID, Rcpp::_) = cum_sum;
-  } else {
-    // If not leaf, give weighted prediction to child nodes
-    hshrink_prob(left_children, right_children, num_samples_nodes, class_freq, lambda, 
-                 left_children[nodeID], num_samples_nodes[nodeID], class_freq(nodeID, Rcpp::_), clone(cum_sum));
-    hshrink_prob(left_children, right_children, num_samples_nodes, class_freq, lambda, 
-                 right_children[nodeID], num_samples_nodes[nodeID], class_freq(nodeID, Rcpp::_), clone(cum_sum));
-  }
-}
-
-// Replace class counts list(vector) with values from matrix
-//[[Rcpp::export]]
-void replace_class_counts(Rcpp::List& class_counts_old, Rcpp::NumericMatrix& class_counts_new) {
-  for (size_t i = 0; i < class_counts_old.size(); ++i) {
-    class_counts_old[i] = class_counts_new(i, Rcpp::_);
-  }
 }
 

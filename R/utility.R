@@ -1,18 +1,18 @@
 # -------------------------------------------------------------------------------
-#   This file is part of Ranger.
+#   This file is part of spruce.
 #
-# Ranger is free software: you can redistribute it and/or modify
+# spruce is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Ranger is distributed in the hope that it will be useful,
+# spruce is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+# along with spruce. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by:
 #
@@ -73,7 +73,7 @@ largest.quantile <- function(formula) {
   names(sort(quantiles))
 }
 
-# Convert ranger object from version <0.11.5 (without x/y interface)
+# Convert spruce object from version <0.11.5 (without x/y interface)
 convert.pre.xy <- function(forest, trees = 1:forest$num.trees) {
   if (is.null(forest$status.varID)) {
     # Not survival

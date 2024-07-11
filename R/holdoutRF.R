@@ -1,18 +1,18 @@
 # -------------------------------------------------------------------------------
-#   This file is part of Ranger.
+#   This file is part of spruce.
 #
-# Ranger is free software: you can redistribute it and/or modify
+# spruce is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Ranger is distributed in the hope that it will be useful,
+# spruce is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+# along with spruce. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by:
 #
@@ -31,9 +31,9 @@
 ##' Related to the novel permutation variable importance by Janitza et al. (2015).
 ##'
 ##' @title Hold-out random forests
-##' @param ... All arguments are passed to \code{\link{ranger}()} (except \code{importance}, \code{case.weights}, \code{replace} and \code{holdout}.). 
+##' @param ... All arguments are passed to \code{\link{spruce}()} (except \code{importance}, \code{case.weights}, \code{replace} and \code{holdout}.). 
 ##' @return Hold-out random forests with variable importance.
-##' @seealso \code{\link{ranger}}
+##' @seealso \code{\link{spruce}}
 ##' @author Marvin N. Wright
 ##' @references
 ##'   Janitza, S., Celik, E. & Boulesteix, A.-L., (2015). A computationally fast variable importance test for random forests for high-dimensional data. Adv Data Anal Classif \doi{10.1007/s11634-016-0276-4}. \cr
@@ -72,9 +72,9 @@ holdoutRF <- function(...) {
   
   ## Grow RFs
   res <- list(
-    rf1 = ranger(..., importance = "permutation",  
+    rf1 = spruce(..., importance = "permutation",  
                  case.weights = weights, replace = FALSE, holdout = TRUE),
-    rf2 = ranger(..., importance = "permutation",
+    rf2 = spruce(..., importance = "permutation",
                  case.weights = 1-weights, replace = FALSE, holdout = TRUE)
   )
   

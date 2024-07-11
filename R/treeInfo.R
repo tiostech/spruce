@@ -1,18 +1,18 @@
 # -------------------------------------------------------------------------------
-#   This file is part of Ranger.
+#   This file is part of spruce.
 #
-# Ranger is free software: you can redistribute it and/or modify
+# spruce is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Ranger is distributed in the hope that it will be useful,
+# spruce is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+# along with spruce. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by:
 #
@@ -29,18 +29,18 @@
 
 #' Tree information in human readable format
 #' 
-#' Extract tree information of a \code{ranger} object. 
+#' Extract tree information of a \code{spruce} object. 
 #' 
 #' Node and variable ID's are 0-indexed, i.e., node 0 is the root node. 
-#' If the formula interface is used in the \code{ranger} call, the variable ID's are usually different to the original data used to grow the tree. 
+#' If the formula interface is used in the \code{spruce} call, the variable ID's are usually different to the original data used to grow the tree. 
 #' Refer to the variable name instead to be sure.
 #' 
-#' Splitting at unordered factors (nominal variables) depends on the option \code{respect.unordered.factors} in the \code{ranger} call. 
+#' Splitting at unordered factors (nominal variables) depends on the option \code{respect.unordered.factors} in the \code{spruce} call. 
 #' For the "ignore" and "order" approaches, all values smaller or equal the \code{splitval} value go to the left and all values larger go to the right, as usual. 
 #' However, with "order" the values correspond to the order in \code{object$forest$covariate.levels} instead of the original order (usually alphabetical).
 #' In the "partition" mode, the \code{splitval} values for unordered factor are comma separated lists of values, representing the factor levels (in the original order) going to the right.
 #' 
-#' @param object \code{ranger} object.
+#' @param object \code{spruce} object.
 #' @param tree Number of the tree of interest.
 #' @return A data.frame with the columns
 #' \tabular{ll}{
@@ -52,22 +52,22 @@
 #'       \code{splitval} \tab The splitting value. For numeric or ordinal variables, all values smaller or equal go to the left, larger values to the right. For unordered factor variables see above. \cr
 #'       \code{terminal} \tab Logical, TRUE for terminal nodes. \cr
 #'       \code{prediction} \tab One column with the predicted class (factor) for classification and the predicted numerical value for regression. One probability per class for probability estimation in several columns. Nothing for survival, refer to \code{object$forest$chf} for the CHF node predictions. \cr
-#'       \code{numSamples} \tab Number of samples in the node (only if ranger called with \code{node.stats = TRUE}). \cr
-#'       \code{splitStat} \tab Split statistics, i.e., value of the splitting criterion (only if ranger called with \code{node.stats = TRUE}). \cr
+#'       \code{numSamples} \tab Number of samples in the node (only if spruce called with \code{node.stats = TRUE}). \cr
+#'       \code{splitStat} \tab Split statistics, i.e., value of the splitting criterion (only if spruce called with \code{node.stats = TRUE}). \cr
 #'   }
 #' @examples
-#' rf <- ranger(Species ~ ., data = iris)
+#' rf <- spruce(Species ~ ., data = iris)
 #' treeInfo(rf, 1)
-#' @seealso \code{\link{ranger}}
+#' @seealso \code{\link{spruce}}
 #' @author Marvin N. Wright
 #' @export
 treeInfo <- function(object, tree = 1) {
-  if (!inherits(object, "ranger")) {
+  if (!inherits(object, "spruce")) {
     stop("Error: Invalid class of input object.")
   }
   forest <- object$forest
   if (is.null(forest)) {
-    stop("Error: No saved forest in ranger object. Please set write.forest to TRUE when calling ranger.")
+    stop("Error: No saved forest in spruce object. Please set write.forest to TRUE when calling spruce.")
   }
   if (is.null(forest$num.trees) ||
       is.null(forest$child.nodeIDs) || is.null(forest$split.varIDs) ||
@@ -79,7 +79,7 @@ treeInfo <- function(object, tree = 1) {
     stop("Error: Invalid forest object.")
   }
   if (length(forest$child.nodeIDs) != forest$num.trees || length(forest$child.nodeIDs[[1]]) != 2) {
-    stop("Error: Invalid forest object. Is the forest grown in ranger version <0.3.9? Try with the same version the forest was grown.")
+    stop("Error: Invalid forest object. Is the forest grown in spruce version <0.3.9? Try with the same version the forest was grown.")
   }
   if (!is.null(forest$dependent.varID)) {
     forest <- convert.pre.xy(forest, trees = tree)

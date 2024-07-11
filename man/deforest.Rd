@@ -2,15 +2,15 @@
 % Please edit documentation in R/deforest.R
 \name{deforest}
 \alias{deforest}
-\alias{deforest.ranger}
+\alias{deforest.spruce}
 \title{Deforesting a random forest}
 \usage{
 deforest(object, which.trees = NULL, ...)
 
-\method{deforest}{ranger}(object, which.trees = NULL, warn = TRUE, ...)
+\method{deforest}{spruce}(object, which.trees = NULL, warn = TRUE, ...)
 }
 \arguments{
-\item{object}{A fitted random forest (e.g., a \code{\link{ranger}}
+\item{object}{A fitted random forest (e.g., a \code{\link{spruce}}
 object).}
 
 \item{which.trees}{Vector giving the indices of the trees to remove.}
@@ -18,12 +18,12 @@ object).}
 \item{...}{Additional (optional) arguments. (Currently ignored.)}
 
 \item{warn}{Logical indicating whether or not to warn users that some of the 
-standard output of a typical \code{\link{ranger}} object or no longer 
+standard output of a typical \code{\link{spruce}} object or no longer 
 available after deforestation. Default is \code{TRUE}.}
 }
 \value{
-An object of class \code{"deforest.ranger"}; essentially, a 
-\code{\link{ranger}} object with certain components replaced with 
+An object of class \code{"deforest.spruce"}; essentially, a 
+\code{\link{spruce}} object with certain components replaced with 
 \code{NA}s (e.g., out-of-bag (OOB) predictions, variable importance scores 
 (if requested), and OOB-based error metrics).
 }
@@ -41,15 +41,15 @@ of the training data without replacement). However, the computational
 benefits of such post-processing can only be realized if the base learners 
 "zeroed out" by the LASSO can actually be removed from the original ensemble, 
 hence the purpose of this function. A complete example using 
-\code{\link{ranger}} can be found at 
-\url{https://github.com/imbs-hl/ranger/issues/568}.
+\code{\link{spruce}} can be found at 
+\url{https://github.com/imbs-hl/spruce/issues/568}.
 }
 \note{
 This function is a generic and can be extended by other packages.
 }
 \examples{
 ## Example of deforesting a random forest
-rfo <- ranger(Species ~ ., data = iris, probability = TRUE, num.trees = 100)
+rfo <- spruce(Species ~ ., data = iris, probability = TRUE, num.trees = 100)
 dfo <- deforest(rfo, which.trees = c(1, 3, 5))
 dfo  # same as `rfo` but with trees 1, 3, and 5 removed
 

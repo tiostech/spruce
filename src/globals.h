@@ -1,18 +1,23 @@
 /*-------------------------------------------------------------------------------
-This file is part of ranger.
+This file is part of spruce.
 
 Copyright (c) [2014-2018] [Marvin N. Wright]
 
 This software may be modified and distributed under the terms of the MIT license.
 
-Please note that the C++ core of ranger is distributed under MIT license and the
-R package "ranger" under GPL3 license.
+Please note that the C++ core of spruce is distributed under MIT license and the
+R package "spruce" under GPL3 license.
 #-------------------------------------------------------------------------------*/
 
+ 
+ // Stands for "if not defined". It checks if a particular macro (GLOBALS_H_ in this case) has not been defined previously in the current translation unit.
+ // Defines the macro GLOBALS_H_. If the macro was not defined (#ifndef condition is true), this line defines GLOBALS_H_.
+ // Always include the corresponding #endif at the end of the header file to close the #ifndef block.
+ 
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
-namespace ranger {
+namespace spruce {
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -54,14 +59,16 @@ const uint MAX_IMP_MODE = 6;
 
 // Split mode
 enum SplitRule {
-  LOGRANK = 1,
+  LOGRANK = 1, // actually means default 
   AUC = 2,
   AUC_IGNORE_TIES = 3,
   MAXSTAT = 4,
   EXTRATREES = 5,
   BETA = 6,
   HELLINGER = 7,
-  POISSON = 8
+  CRYSTAL = 8,
+  ABSOLUTE = 9, 
+  VARIANCE = 10
 };
 
 // Prediction type
@@ -86,8 +93,6 @@ const SplitRule DEFAULT_SPLITRULE = LOGRANK;
 const double DEFAULT_ALPHA = 0.5;
 const double DEFAULT_MINPROP = 0.1;
 
-const double DEFAULT_POISSON_TAU = 1;
-
 const uint DEFAULT_MAXDEPTH = 0;
 const PredictionType DEFAULT_PREDICTIONTYPE = RESPONSE;
 const uint DEFAULT_NUM_RANDOM_SPLITS = 1;
@@ -101,6 +106,6 @@ const double STATUS_INTERVAL = 30.0;
 // Threshold for q value split method switch
 const double Q_THRESHOLD = 0.02;
 
-} // namespace ranger
+} // namespace spruce
 
 #endif /* GLOBALS_H_ */

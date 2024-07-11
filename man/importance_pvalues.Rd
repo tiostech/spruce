@@ -2,7 +2,7 @@
 % Please edit documentation in R/importance.R
 \name{importance_pvalues}
 \alias{importance_pvalues}
-\title{ranger variable importance p-values}
+\title{spruce variable importance p-values}
 \usage{
 importance_pvalues(
   x,
@@ -14,7 +14,7 @@ importance_pvalues(
 )
 }
 \arguments{
-\item{x}{\code{ranger} or \code{holdoutRF} object.}
+\item{x}{\code{spruce} or \code{holdoutRF} object.}
 
 \item{method}{Method to compute p-values. Use "janitza" for the method by Janitza et al. (2016) or "altmann" for the non-parametric method by Altmann et al. (2010).}
 
@@ -24,7 +24,7 @@ importance_pvalues(
 
 \item{data}{Training data of class data.frame or matrix. Used in the "altmann" method only.}
 
-\item{...}{Further arguments passed to \code{ranger()}. Used in the "altmann" method only.}
+\item{...}{Further arguments passed to \code{spruce()}. Used in the "altmann" method only.}
 }
 \value{
 Variable importance and p-value for each variable.
@@ -53,12 +53,12 @@ We add 1 to the numerator and denominator to avoid zero p-values.
 n <- 50
 p <- 400
 dat <- data.frame(y = factor(rbinom(n, 1, .5)), replicate(p, runif(n)))
-rf.sim <- ranger(y ~ ., dat, importance = "impurity_corrected")
+rf.sim <- spruce(y ~ ., dat, importance = "impurity_corrected")
 importance_pvalues(rf.sim, method = "janitza")
 
 ## Permutation p-values 
 \dontrun{
-rf.iris <- ranger(Species ~ ., data = iris, importance = 'permutation')
+rf.iris <- spruce(Species ~ ., data = iris, importance = 'permutation')
 importance_pvalues(rf.iris, method = "altmann", formula = Species ~ ., data = iris)
 }
 }
@@ -67,7 +67,7 @@ Janitza, S., Celik, E. & Boulesteix, A.-L., (2016). A computationally fast varia
   Altmann, A., Tolosi, L., Sander, O. & Lengauer, T. (2010). Permutation importance: a corrected feature importance measure, Bioinformatics 26:1340-1347.
 }
 \seealso{
-\code{\link{ranger}}
+\code{\link{spruce}}
 }
 \author{
 Marvin N. Wright

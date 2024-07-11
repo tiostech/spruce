@@ -1,12 +1,12 @@
 /*-------------------------------------------------------------------------------
- This file is part of ranger.
+ This file is part of spruce.
 
  Copyright (c) [2014-2018] [Marvin N. Wright]
 
  This software may be modified and distributed under the terms of the MIT license.
 
- Please note that the C++ core of ranger is distributed under MIT license and the
- R package "ranger" under GPL3 license.
+ Please note that the C++ core of spruce is distributed under MIT license and the
+ R package "spruce" under GPL3 license.
  #-------------------------------------------------------------------------------*/
 
 #ifndef TREE_H_
@@ -20,7 +20,7 @@
 #include "globals.h"
 #include "Data.h"
 
-namespace ranger {
+namespace spruce {
 
 class Tree {
 public:
@@ -31,15 +31,17 @@ public:
       std::vector<double>& split_values);
 
   virtual ~Tree() = default;
+  // you cannot directly instantiate it because abstract classes are meant to be inherited by other classes,
+  // which then provide implementations for the pure virtual functions declared in the abstract class. 
 
   Tree(const Tree&) = delete;
   Tree& operator=(const Tree&) = delete;
 
   void init(const Data* data, uint mtry, size_t num_samples, uint seed, std::vector<size_t>* deterministic_varIDs,
-      std::vector<double>* split_select_weights, ImportanceMode importance_mode, std::vector<uint>* min_node_size, std::vector<uint>* min_bucket,
+      std::vector<double>* split_select_weights, ImportanceMode importance_mode, uint min_node_size, uint min_bucket,
       bool sample_with_replacement, bool memory_saving_splitting, SplitRule splitrule,
       std::vector<double>* case_weights, std::vector<size_t>* manual_inbag, bool keep_inbag,
-      std::vector<double>* sample_fraction, double alpha, double minprop, double poisson_tau, bool holdout, uint num_random_splits,
+      std::vector<double>* sample_fraction, double alpha, double minprop, bool holdout, uint num_random_splits,
       uint max_depth, std::vector<double>* regularization_factor, bool regularization_usedepth,
       std::vector<bool>* split_varIDs_used, bool save_node_stats);
 
@@ -49,8 +51,7 @@ public:
 
   void predict(const Data* prediction_data, bool oob_prediction);
 
-  void computePermutationImportance(std::vector<double>& forest_importance, std::vector<double>& forest_variance,
-      std::vector<double>& forest_importance_casewise);
+  void computePermutationImportance(std::vector<double>& forest_importance, std::vector<double>& forest_variance, std::vector<double>& forest_importance_casewise);
 
   void appendToFile(std::ofstream& file);
   virtual void appendToFileInternal(std::ofstream& file) = 0;
@@ -85,13 +86,19 @@ public:
   const std::vector<double>& getSplitStats() const {
     return split_stats;
   }
+  
+// protected:
+  void bootstrap(); // protected
 
-protected:
   void createPossibleSplitVarSubset(std::vector<size_t>& result);
 
   bool splitNode(size_t nodeID);
   virtual bool splitNodeInternal(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
-
+  virtual bool splitNodeInternalCrystal(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
+  virtual bool splitNodeInternalAbsoluteCost(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
+  virtual bool splitNodeInternalV2(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
+  
+  
   void createEmptyNode();
   virtual void createEmptyNodeInternal() = 0;
 
@@ -100,7 +107,6 @@ protected:
 
   virtual double computePredictionAccuracyInternal(std::vector<double>* prediction_error_casewise) = 0;
   
-  void bootstrap();
   void bootstrapWithoutReplacement();
 
   void bootstrapWeighted();
@@ -166,10 +172,10 @@ protected:
   size_t num_samples_oob;
 
   // Minimum node size to split, nodes of smaller size can be produced
-  std::vector<uint>* min_node_size;
+  uint min_node_size;
   
   // Minimum bucket size, minimum number of samples in each node
-  std::vector<uint>* min_bucket;
+  uint min_bucket;
 
   // Weight vector for selecting possible split variables, one weight between 0 (never select) and 1 (always select) for each variable
   // Deterministic variables are always selected
@@ -242,13 +248,12 @@ protected:
   SplitRule splitrule;
   double alpha;
   double minprop;
-  double poisson_tau;
   uint num_random_splits;
   uint max_depth;
   uint depth;
   size_t last_left_nodeID;
 };
 
-} // namespace ranger
+} // namespace spruce
 
 #endif /* TREE_H_ */

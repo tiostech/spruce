@@ -1,12 +1,12 @@
 /*-------------------------------------------------------------------------------
- This file is part of ranger.
+ This file is part of spruce.
 
  Copyright (c) [2014-2018] [Marvin N. Wright]
 
  This software may be modified and distributed under the terms of the MIT license.
 
- Please note that the C++ core of ranger is distributed under MIT license and the
- R package "ranger" under GPL3 license.
+ Please note that the C++ core of spruce is distributed under MIT license and the
+ R package "spruce" under GPL3 license.
  #-------------------------------------------------------------------------------*/
 
 #include <fstream>
@@ -18,7 +18,7 @@
 #include "Data.h"
 #include "utility.h"
 
-namespace ranger {
+namespace spruce {
 
 Data::Data() :
     num_rows(0), num_rows_rounded(0), num_cols(0), snp_data(0), num_cols_no_snp(0), externalData(true), index_data(0), max_num_unique_values(
@@ -214,8 +214,7 @@ bool Data::loadFromFileOther(std::ifstream& input_file, std::string header_line,
 }
 // #nocov end
 
-void Data::getAllValues(std::vector<double>& all_values, std::vector<size_t>& sampleIDs, size_t varID, size_t start,
-    size_t end) const {
+void Data::getAllValues(std::vector<double>& all_values, std::vector<size_t>& sampleIDs, size_t varID, size_t start, size_t end) const {
 
   // All values for varID (no duplicates) for given sampleIDs
   if (getUnpermutedVarID(varID) < num_cols_no_snp) {
@@ -338,5 +337,5 @@ void Data::orderSnpLevels(bool corrected_importance) {
 }
 // #nocov end
 
-} // namespace ranger
+} // namespace spruce
 

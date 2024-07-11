@@ -1,18 +1,18 @@
 # -------------------------------------------------------------------------------
-#   This file is part of Ranger.
+#   This file is part of spruce.
 #
-# Ranger is free software: you can redistribute it and/or modify
+# spruce is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Ranger is distributed in the hope that it will be useful,
+# spruce is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+# along with spruce. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by:
 #
@@ -29,20 +29,20 @@
 ##' @export
 importance <- function(x, ...)  UseMethod("importance")
 
-##' Extract variable importance of ranger object.
+##' Extract variable importance of spruce object.
 ##'
 ##'
-##' @title ranger variable importance
-##' @param x ranger object.
+##' @title spruce variable importance
+##' @param x spruce object.
 ##' @param ... Further arguments passed to or from other methods.
 ##' @return Variable importance measures.
-##' @seealso \code{\link{ranger}}
+##' @seealso \code{\link{spruce}}
 ##' @author Marvin N. Wright
 ##' @aliases importance
 ##' @export 
-importance.ranger <- function(x, ...) {
-  if (!inherits(x, "ranger")) {
-    stop("Object ist no ranger object.")
+importance.spruce <- function(x, ...) {
+  if (!inherits(x, "spruce")) {
+    stop("Object ist no spruce object.")
   }
   if (is.null(x$variable.importance) || length(x$variable.importance) < 1) {
     stop("No variable importance found. Please use 'importance' option when growing the forest.")
@@ -67,28 +67,28 @@ importance.ranger <- function(x, ...) {
 ##' However, much larger numbers have to be used to estimate more precise p-values.
 ##' We add 1 to the numerator and denominator to avoid zero p-values.
 ##'
-##' @title ranger variable importance p-values
-##' @param x \code{ranger} or \code{holdoutRF} object.
+##' @title spruce variable importance p-values
+##' @param x \code{spruce} or \code{holdoutRF} object.
 ##' @param method Method to compute p-values. Use "janitza" for the method by Janitza et al. (2016) or "altmann" for the non-parametric method by Altmann et al. (2010).
 ##' @param num.permutations Number of permutations. Used in the "altmann" method only.
 ##' @param formula Object of class formula or character describing the model to fit. Used in the "altmann" method only.
 ##' @param data Training data of class data.frame or matrix. Used in the "altmann" method only.
-##' @param ... Further arguments passed to \code{ranger()}. Used in the "altmann" method only.
+##' @param ... Further arguments passed to \code{spruce()}. Used in the "altmann" method only.
 ##' @return Variable importance and p-value for each variable.
 ##' @examples
 ##' ## Janitza's p-values with corrected Gini importance
 ##' n <- 50
 ##' p <- 400
 ##' dat <- data.frame(y = factor(rbinom(n, 1, .5)), replicate(p, runif(n)))
-##' rf.sim <- ranger(y ~ ., dat, importance = "impurity_corrected")
+##' rf.sim <- spruce(y ~ ., dat, importance = "impurity_corrected")
 ##' importance_pvalues(rf.sim, method = "janitza")
 ##' 
 ##' ## Permutation p-values 
 ##' \dontrun{
-##' rf.iris <- ranger(Species ~ ., data = iris, importance = 'permutation')
+##' rf.iris <- spruce(Species ~ ., data = iris, importance = 'permutation')
 ##' importance_pvalues(rf.iris, method = "altmann", formula = Species ~ ., data = iris)
 ##' }
-##' @seealso \code{\link{ranger}}
+##' @seealso \code{\link{spruce}}
 ##' @author Marvin N. Wright
 ##' @references
 ##'   Janitza, S., Celik, E. & Boulesteix, A.-L., (2016). A computationally fast variable importance test for random forests for high-dimensional data. Adv Data Anal Classif \doi{10.1007/s11634-016-0276-4}. \cr
@@ -96,8 +96,8 @@ importance.ranger <- function(x, ...) {
 ##' @export 
 importance_pvalues <- function(x, method = c("janitza", "altmann"), num.permutations = 100, formula = NULL, data = NULL, ...) {
   method <- match.arg(method)
-  if (!inherits(x, c("ranger", "holdoutRF"))) {
-    stop("Object is no ranger or holdoutRF object.")
+  if (!inherits(x, c("spruce", "holdoutRF"))) {
+    stop("Object is no spruce or holdoutRF object.")
   }
   if (x$importance.mode == "none" || is.null(x$variable.importance) || length(x$variable.importance) < 1) {
     stop("No variable importance found. Please use 'importance' option when growing the forest.")
@@ -131,7 +131,7 @@ importance_pvalues <- function(x, method = c("janitza", "altmann"), num.permutat
       warning("Only few negative importance values found, inaccurate p-values. Consider the 'altmann' approach.")
     }
   } else if (method == "altmann") {
-    if (!inherits(x, "ranger")) {
+    if (!inherits(x, "spruce")) {
       stop("Altmann method not available for holdoutRF objects.")
     }
     if (is.null(formula) || is.null(data)) {
@@ -150,7 +150,7 @@ importance_pvalues <- function(x, method = c("janitza", "altmann"), num.permutat
     vimp <- sapply(1:num.permutations, function(i) {
       dat <- data
       dat[, dependent.variable.name] <- dat[sample(nrow(dat)), dependent.variable.name]
-      ranger(formula, dat, num.trees = x$num.trees, mtry = x$mtry, min.node.size = x$min.node.size, 
+      spruce(formula, dat, num.trees = x$num.trees, mtry = x$mtry, min.node.size = x$min.node.size, 
              importance = x$importance.mode, replace = x$replace, ...)$variable.importance
     })
     

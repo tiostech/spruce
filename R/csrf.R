@@ -1,18 +1,18 @@
 # -------------------------------------------------------------------------------
-#   This file is part of Ranger.
+#   This file is part of spruce.
 #
-# Ranger is free software: you can redistribute it and/or modify
+# spruce is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Ranger is distributed in the hope that it will be useful,
+# spruce is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+# along with spruce. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by:
 #
@@ -66,7 +66,7 @@
 ##' @export
 csrf <- function(formula, training_data, test_data, params1 = list(), params2 = list(), verbose = FALSE) {
   ## Grow a random forest on the training data to obtain weights
-  rf.proximity <- do.call(ranger, c(list(formula = formula, data = training_data, 
+  rf.proximity <- do.call(spruce, c(list(formula = formula, data = training_data, 
                                          write.forest = TRUE), params1))
   
   ## Get terminal nodes
@@ -87,7 +87,7 @@ csrf <- function(formula, training_data, test_data, params1 = list(), params2 = 
     weights <- num.same.node / sum(num.same.node)
     
     ## Grow weighted RF
-    rf.prediction <- do.call(ranger, c(list(formula = formula, data = training_data, 
+    rf.prediction <- do.call(spruce, c(list(formula = formula, data = training_data, 
                                             write.forest = TRUE, case.weights = weights), 
                                        params2))
     

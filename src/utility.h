@@ -1,18 +1,17 @@
 /*-------------------------------------------------------------------------------
- This file is part of ranger.
+ This file is part of spruce.
 
  Copyright (c) [2014-2018] [Marvin N. Wright]
 
  This software may be modified and distributed under the terms of the MIT license.
 
- Please note that the C++ core of ranger is distributed under MIT license and the
- R package "ranger" under GPL3 license.
+ Please note that the C++ core of spruce is distributed under MIT license and the
+ R package "spruce" under GPL3 license.
  #-------------------------------------------------------------------------------*/
 
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
-#include <math.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -31,8 +30,18 @@
 
 #include "globals.h"
 #include "Data.h"
+ 
+ 
+ // Definitions: Header files do not contain the actual implementation (definition) of functions or variables. They only provide declarations or signatures.
+ // Usage: Header files are meant to be included in .cpp files where the actual implementation resides, allowing other parts of the program to use the declarations without needing to know the details of the implementation.
+ 
+ 
+ //.cpp 
+ // Purpose: .cpp files contain the actual implementation of functions, member functions of classes, and any other program logic.
+ // Contents: They include function definitions, variable initializations, and possibly include headers that declare the interfaces used in the implementation.
+ 
 
-namespace ranger {
+namespace spruce {
 
 /**
  * Split sequence start..end in num_parts parts with sizes as equal as possible.
@@ -526,25 +535,9 @@ std::stringstream& readFromStream(std::stringstream& in, double& token);
  */
 double betaLogLik(double y, double mean, double phi);
 
-/**
- * Compute x * log(y) with 0 * log(..) equal to 0.
- * @param x
- * @param y
- * @return x * log(y)
- */
-inline double xlogy(double x, double y) {
-  if (x == 0) {
-    return 0;
-  } else {
-    return x * log(y);
-  }
-}
+double findMedianOfMedians(std::vector<double>& arr, size_t k);
 
-/**
- * Returns the natural logarithm of the absolute value of the gamma function of x.
- * @param x Parameter for the log-gamma function.
- */
-double mylgamma(double x);
+double findMedian(std::vector<double>& arr);
 
 // User interrupt from R
 #ifdef R_BUILD
@@ -558,6 +551,6 @@ inline bool checkInterrupt() {
 #endif
 
 }
-// namespace ranger
+// namespace spruce
 
 #endif /* UTILITY_H_ */

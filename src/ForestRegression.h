@@ -1,12 +1,12 @@
 /*-------------------------------------------------------------------------------
- This file is part of ranger.
+ This file is part of spruce.
 
  Copyright (c) [2014-2018] [Marvin N. Wright]
 
  This software may be modified and distributed under the terms of the MIT license.
 
- Please note that the C++ core of ranger is distributed under MIT license and the
- R package "ranger" under GPL3 license.
+ Please note that the C++ core of spruce is distributed under MIT license and the
+ R package "spruce" under GPL3 license.
  #-------------------------------------------------------------------------------*/
 
 #ifndef FORESTREGRESSION_H_
@@ -18,7 +18,7 @@
 #include "globals.h"
 #include "Forest.h"
 
-namespace ranger {
+namespace spruce {
 
 class ForestRegression: public Forest {
 public:
@@ -32,8 +32,7 @@ public:
   void loadForest(size_t num_trees, std::vector<std::vector<std::vector<size_t>> >& forest_child_nodeIDs,
       std::vector<std::vector<size_t>>& forest_split_varIDs, std::vector<std::vector<double>>& forest_split_values,
       std::vector<bool>& is_ordered_variable);
-
-private:
+// private:
   void initInternal() override;
   void growInternal() override;
   void allocatePredictMemory() override;
@@ -45,11 +44,11 @@ private:
   void saveToFileInternal(std::ofstream& outfile) override;
   void loadFromFileInternal(std::ifstream& infile) override;
 
-private:
+// private:
   double getTreePrediction(size_t tree_idx, size_t sample_idx) const;
   size_t getTreePredictionTerminalNodeID(size_t tree_idx, size_t sample_idx) const;
 };
 
-} // namespace ranger
+} // namespace spruce
 
 #endif /* FORESTREGRESSION_H_ */

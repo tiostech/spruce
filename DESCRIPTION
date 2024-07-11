@@ -1,8 +1,8 @@
-Package: ranger
+Package: spruce
 Type: Package
 Title: A Fast Implementation of Random Forests
-Version: 0.16.2
-Date: 2024-05-16
+Version: 0.17.0
+Date: 2024-07-11
 Author: Marvin N. Wright [aut, cre], Stefan Wager [ctb], Philipp Probst [ctb]
 Maintainer: Marvin N. Wright <cran@wrig.de>
 Description: A fast implementation of Random Forests, particularly suited for high
@@ -15,11 +15,13 @@ License: GPL-3
 Imports: Rcpp (>= 0.11.2), Matrix
 LinkingTo: Rcpp, RcppEigen
 Depends: R (>= 3.1)
-Suggests: 
-    survival,
-    testthat
+Suggests: survival, testthat
 Encoding: UTF-8
-RoxygenNote: 7.3.1
-URL: https://imbs-hl.github.io/ranger/,
-    https://github.com/imbs-hl/ranger
+RoxygenNote: 7.2.3
+URL: http://imbs-hl.github.io/ranger/,
+        https://github.com/imbs-hl/ranger
 BugReports: https://github.com/imbs-hl/ranger/issues
+NeedsCompilation: yes
+Packaged: 2023-11-10 18:34:21 UTC; wright
+Repository: CRAN
+Date/Publication: 2023-11-12 20:13:19 UTC

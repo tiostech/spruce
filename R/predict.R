@@ -1,18 +1,18 @@
 # -------------------------------------------------------------------------------
-#   This file is part of Ranger.
+#   This file is part of spruce.
 #
-# Ranger is free software: you can redistribute it and/or modify
+# spruce is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Ranger is distributed in the hope that it will be useful,
+# spruce is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Ranger. If not, see <http://www.gnu.org/licenses/>.
+# along with spruce. If not, see <http://www.gnu.org/licenses/>.
 #
 # Written by:
 #
@@ -26,7 +26,7 @@
 # http://www.imbs-luebeck.de
 # -------------------------------------------------------------------------------
 
-##' Prediction with new data and a saved forest from Ranger.
+##' Prediction with new data and a saved forest from spruce.
 ##' 
 ##' For \code{type = 'response'} (the default), the predicted classes (classification), predicted numeric values (regression), predicted probabilities (probability estimation) or survival probabilities (survival) are returned. 
 ##' For \code{type = 'se'}, the standard error of the predictions are returned (regression only). The jackknife-after-bootstrap or infinitesimal jackknife for bagging is used to estimate the standard errors based on out-of-bag predictions. See Wager et al. (2014) for details.
@@ -35,24 +35,21 @@
 ##' If \code{type = 'se'} is selected, the method to estimate the variances can be chosen with \code{se.method}. Set \code{se.method = 'jack'} for jackknife after bootstrap and \code{se.method = 'infjack'} for the infinitesimal jackknife for bagging.
 ##' 
 ##' For classification and \code{predict.all = TRUE}, a factor levels are returned as numerics.
-##' To retrieve the corresponding factor levels, use \code{rf$forest$levels}, if \code{rf} is the ranger object.
-##' 
-##' By default, ranger uses 2 threads. The default can be changed with: (1) \code{num.threads} in ranger/predict call, (2) environment variable
-##' R_RANGER_NUM_THREADS, (3) \code{options(ranger.num.threads = N)}, (4) \code{options(Ncpus = N)}, with precedence in that order.
+##' To retrieve the corresponding factor levels, use \code{rf$forest$levels}, if \code{rf} is the spruce object.
 ##'
-##' @title Ranger prediction
-##' @param object Ranger \code{ranger.forest} object.
+##' @title spruce prediction
+##' @param object spruce \code{spruce.forest} object.
 ##' @param data New test data of class \code{data.frame} or \code{gwaa.data} (GenABEL). 
 ##' @param predict.all Return individual predictions for each tree instead of aggregated predictions for all trees. Return a matrix (sample x tree) for classification and regression, a 3d array for probability estimation (sample x class x tree) and survival (sample x time x tree).
 ##' @param num.trees Number of trees used for prediction. The first \code{num.trees} in the forest are used.
 ##' @param type Type of prediction. One of 'response', 'se', 'terminalNodes', 'quantiles' with default 'response'. See below for details.
 ##' @param se.method Method to compute standard errors. One of 'jack', 'infjack' with default 'infjack'. Only applicable if type = 'se'. See below for details.
 ##' @param seed Random seed. Default is \code{NULL}, which generates the seed from \code{R}. Set to \code{0} to ignore the \code{R} seed. The seed is used in case of ties in classification mode.
-##' @param num.threads Number of threads. Use 0 for all available cores. Default is 2 if not set by options/environment variables (see below).
+##' @param num.threads Number of threads. Default is number of CPUs available.
 ##' @param verbose Verbose output on or off.
 ##' @param inbag.counts Number of times the observations are in-bag in the trees.
 ##' @param ... further arguments passed to or from other methods.
-##' @return Object of class \code{ranger.prediction} with elements
+##' @return Object of class \code{spruce.prediction} with elements
 ##'   \tabular{ll}{
 ##'       \code{predictions}    \tab Predicted classes/values (only for classification and regression)  \cr
 ##'       \code{unique.death.times} \tab Unique death times (only for survival). \cr
@@ -65,14 +62,14 @@
 ##'   }
 ##' @references
 ##' \itemize{
-##'   \item Wright, M. N. & Ziegler, A. (2017). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. J Stat Softw 77:1-17. \doi{10.18637/jss.v077.i01}.
+##'   \item Wright, M. N. & Ziegler, A. (2017). spruce: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. J Stat Softw 77:1-17. \doi{10.18637/jss.v077.i01}.
 ##'   \item Wager, S., Hastie T., & Efron, B. (2014). Confidence Intervals for Random Forests: The Jackknife and the Infinitesimal Jackknife. J Mach Learn Res 15:1625-1651. \url{https://jmlr.org/papers/v15/wager14a.html}.
 ##'   }
-##' @seealso \code{\link{ranger}}
+##' @seealso \code{\link{spruce}}
 ##' @author Marvin N. Wright
 ##' @importFrom Matrix Matrix
 ##' @export
-predict.ranger.forest <- function(object, data, predict.all = FALSE,
+predict.spruce.forest <- function(object, data, predict.all = FALSE,
                                   num.trees = object$num.trees, 
                                   type = "response", se.method = "infjack",
                                   seed = NULL, num.threads = NULL,
@@ -90,7 +87,7 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   }
 
   ## Check forest argument
-  if (!inherits(object, "ranger.forest")) {
+  if (!inherits(object, "spruce.forest")) {
     stop("Error: Invalid class of input object.")
   } else {
     forest <- object
@@ -105,12 +102,12 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
     stop("Error: Invalid forest object.")
   }
   
-  ## Check for old ranger version
+  ## Check for old spruce version
   if (length(forest$child.nodeIDs) != forest$num.trees || length(forest$child.nodeIDs[[1]]) != 2) {
-    stop("Error: Invalid forest object. Is the forest grown in ranger version <0.3.9? Try to predict with the same version the forest was grown.")
+    stop("Error: Invalid forest object. Is the forest grown in spruce version <0.3.9? Try to predict with the same version the forest was grown.")
   }
   if (!is.null(forest$dependent.varID)) {
-    warning("Forest grown in ranger version <0.11.5, converting ...")
+    warning("Forest grown in spruce version <0.11.5, converting ...")
     forest <- convert.pre.xy(forest)
   }
   
@@ -120,7 +117,7 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   } else if (type == "terminalNodes") {
     prediction.type <- 2
   } else if (type == "quantiles") {
-    stop("Error: Apply predict() to the ranger object instead of the $forest object to predict quantiles.")
+    stop("Error: Apply predict() to the spruce object instead of the $forest object to predict quantiles.")
   } else {
     stop("Error: Invalid value for 'type'. Use 'response', 'se', 'terminalNodes', or 'quantiles'.")
   }
@@ -139,7 +136,7 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   
   ## Type "se" requires keep.inbag=TRUE
   if (type == "se" && is.null(inbag.counts)) {
-    stop("Error: No saved inbag counts in ranger object. Please set keep.inbag=TRUE when calling ranger.")
+    stop("Error: No saved inbag counts in spruce object. Please set keep.inbag=TRUE when calling spruce.")
   }
   
   ## Set predict.all if type is "se"
@@ -196,7 +193,7 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   ## Num threads
   ## Default 0 -> detect from system in C++.
   if (is.null(num.threads)) {
-    num.threads <- as.integer(Sys.getenv("R_RANGER_NUM_THREADS", getOption("ranger.num.threads", getOption("Ncpus", 2L))))
+    num.threads = 0
   } else if (!is.numeric(num.threads) || num.threads < 0) {
     stop("Error: Invalid value for num.threads")
   }
@@ -237,7 +234,6 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   splitrule <- 1
   alpha <- 0
   minprop <- 0
-  poisson.tau <- 1
   case.weights <- c(0, 0)
   use.case.weights <- FALSE
   class.weights <- c(0, 0)
@@ -251,13 +247,16 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
   inbag <- list(c(0,0))
   use.inbag <- FALSE
   y <- matrix(c(0, 0))
+  z <- matrix(c(0, 0))
+  test_x <- matrix(c(0, 0))
+  
   regularization.factor <- c(0, 0)
   use.regularization.factor <- FALSE
   regularization.usedepth <- FALSE
   node.stats <- FALSE
   time.interest <- c(0, 0)
   use.time.interest <- FALSE
-  
+
   ## Use sparse matrix
   if (inherits(x, "dgCMatrix")) {
     sparse.x <- x
@@ -268,16 +267,17 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
     use.sparse.data <- FALSE
     x <- data.matrix(x)
   }
-  
-  ## Call Ranger
-  result <- rangerCpp(treetype, x, y, forest$independent.variable.names, mtry,
+
+
+  ## Call spruce
+  result <- spruceCpp(treetype, x, y, z, test_x, forest$independent.variable.names, mtry,
                       num.trees, verbose, seed, num.threads, write.forest, importance,
                       min.node.size, min.bucket, split.select.weights, use.split.select.weights,
                       always.split.variables, use.always.split.variables,
                       prediction.mode, forest, snp.data, replace, probability,
                       unordered.factor.variables, use.unordered.factor.variables, save.memory, splitrule,
                       case.weights, use.case.weights, class.weights, 
-                      predict.all, keep.inbag, sample.fraction, alpha, minprop, poisson.tau, holdout, 
+                      predict.all, keep.inbag, sample.fraction, alpha, minprop, holdout, 
                       prediction.type, num.random.splits, sparse.x, use.sparse.data,
                       order.snps, oob.error, max.depth, inbag, use.inbag, 
                       regularization.factor, use.regularization.factor, regularization.usedepth, 
@@ -422,11 +422,11 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
     }
   }
 
-  class(result) <- "ranger.prediction"
+  class(result) <- "spruce.prediction"
   return(result)
 }
 
-##' Prediction with new data and a saved forest from Ranger.
+##' Prediction with new data and a saved forest from spruce.
 ##' 
 ##' For \code{type = 'response'} (the default), the predicted classes (classification), predicted numeric values (regression), predicted probabilities (probability estimation) or survival probabilities (survival) are returned. 
 ##' For \code{type = 'se'}, the standard error of the predictions are returned (regression only). The jackknife-after-bootstrap or infinitesimal jackknife for bagging is used to estimate the standard errors based on out-of-bag predictions. See Wager et al. (2014) for details.
@@ -436,13 +436,10 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
 ##' If \code{type = 'se'} is selected, the method to estimate the variances can be chosen with \code{se.method}. Set \code{se.method = 'jack'} for jackknife-after-bootstrap and \code{se.method = 'infjack'} for the infinitesimal jackknife for bagging.
 ##' 
 ##' For classification and \code{predict.all = TRUE}, a factor levels are returned as numerics.
-##' To retrieve the corresponding factor levels, use \code{rf$forest$levels}, if \code{rf} is the ranger object.
-##' 
-##' By default, ranger uses 2 threads. The default can be changed with: (1) \code{num.threads} in ranger/predict call, (2) environment variable
-##' R_RANGER_NUM_THREADS, (3) \code{options(ranger.num.threads = N)}, (4) \code{options(Ncpus = N)}, with precedence in that order.
+##' To retrieve the corresponding factor levels, use \code{rf$forest$levels}, if \code{rf} is the spruce object.
 ##'
-##' @title Ranger prediction
-##' @param object Ranger \code{ranger} object.
+##' @title spruce prediction
+##' @param object spruce \code{spruce} object.
 ##' @param data New test data of class \code{data.frame} or \code{gwaa.data} (GenABEL).
 ##' @param predict.all Return individual predictions for each tree instead of aggregated predictions for all trees. Return a matrix (sample x tree) for classification and regression, a 3d array for probability estimation (sample x class x tree) and survival (sample x time x tree).
 ##' @param num.trees Number of trees used for prediction. The first \code{num.trees} in the forest are used.
@@ -451,10 +448,10 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
 ##' @param quantiles Vector of quantiles for quantile prediction. Set \code{type = 'quantiles'} to use.
 ##' @param what User specified function for quantile prediction used instead of \code{quantile}. Must return numeric vector, see examples.
 ##' @param seed Random seed. Default is \code{NULL}, which generates the seed from \code{R}. Set to \code{0} to ignore the \code{R} seed. The seed is used in case of ties in classification mode.
-##' @param num.threads Number of threads. Use 0 for all available cores. Default is 2 if not set by options/environment variables (see below).
+##' @param num.threads Number of threads. Default is number of CPUs available.
 ##' @param verbose Verbose output on or off.
 ##' @param ... further arguments passed to or from other methods.
-##' @return Object of class \code{ranger.prediction} with elements
+##' @return Object of class \code{spruce.prediction} with elements
 ##'   \tabular{ll}{
 ##'       \code{predictions}    \tab Predicted classes/values (only for classification and regression)  \cr
 ##'       \code{unique.death.times} \tab Unique death times (only for survival). \cr
@@ -467,35 +464,35 @@ predict.ranger.forest <- function(object, data, predict.all = FALSE,
 ##'   }
 ##' @examples
 ##' ## Classification forest
-##' ranger(Species ~ ., data = iris)
+##' spruce(Species ~ ., data = iris)
 ##' train.idx <- sample(nrow(iris), 2/3 * nrow(iris))
 ##' iris.train <- iris[train.idx, ]
 ##' iris.test <- iris[-train.idx, ]
-##' rg.iris <- ranger(Species ~ ., data = iris.train)
+##' rg.iris <- spruce(Species ~ ., data = iris.train)
 ##' pred.iris <- predict(rg.iris, data = iris.test)
 ##' table(iris.test$Species, pred.iris$predictions)
 ##' 
 ##' ## Quantile regression forest
-##' rf <- ranger(mpg ~ ., mtcars[1:26, ], quantreg = TRUE)
+##' rf <- spruce(mpg ~ ., mtcars[1:26, ], quantreg = TRUE)
 ##' pred <- predict(rf, mtcars[27:32, ], type = "quantiles", quantiles = c(0.1, 0.5, 0.9))
 ##' pred$predictions
 ##' 
 ##' ## Quantile regression forest with user-specified function
-##' rf <- ranger(mpg ~ ., mtcars[1:26, ], quantreg = TRUE)
+##' rf <- spruce(mpg ~ ., mtcars[1:26, ], quantreg = TRUE)
 ##' pred <- predict(rf, mtcars[27:32, ], type = "quantiles", 
 ##'                 what = function(x) sample(x, 10, replace = TRUE))
 ##' pred$predictions
 ##' 
 ##' @references
 ##' \itemize{
-##'   \item Wright, M. N. & Ziegler, A. (2017). ranger: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. J Stat Softw 77:1-17. \doi{10.18637/jss.v077.i01}.
+##'   \item Wright, M. N. & Ziegler, A. (2017). spruce: A Fast Implementation of Random Forests for High Dimensional Data in C++ and R. J Stat Softw 77:1-17. \doi{10.18637/jss.v077.i01}.
 ##'   \item Wager, S., Hastie T., & Efron, B. (2014). Confidence Intervals for Random Forests: The Jackknife and the Infinitesimal Jackknife. J Mach Learn Res 15:1625-1651. \url{https://jmlr.org/papers/v15/wager14a.html}.
 ##'   \item Meinshausen (2006). Quantile Regression Forests. J Mach Learn Res 7:983-999. \url{https://www.jmlr.org/papers/v7/meinshausen06a.html}.  
 ##'   }
-##' @seealso \code{\link{ranger}}
+##' @seealso \code{\link{spruce}}
 ##' @author Marvin N. Wright
 ##' @export
-predict.ranger <- function(object, data = NULL, predict.all = FALSE,
+predict.spruce <- function(object, data = NULL, predict.all = FALSE,
                            num.trees = object$num.trees,
                            type = "response", se.method = "infjack",
                            quantiles = c(0.1, 0.5, 0.9), 
@@ -504,7 +501,7 @@ predict.ranger <- function(object, data = NULL, predict.all = FALSE,
                            verbose = TRUE, ...) {
   forest <- object$forest
   if (is.null(forest)) {
-    stop("Error: No saved forest in ranger object. Please set write.forest to TRUE when calling ranger.")
+    stop("Error: No saved forest in spruce object. Please set write.forest to TRUE when calling spruce.")
   }
   if (object$importance.mode %in% c("impurity_corrected", "impurity_unbiased")) {
     warning("Forest was grown with 'impurity_corrected' variable importance. For prediction it is advised to grow another forest without this importance setting.")
@@ -516,13 +513,13 @@ predict.ranger <- function(object, data = NULL, predict.all = FALSE,
       stop("Error: Quantile prediction implemented only for regression outcomes.")
     }
     if (is.null(object$random.node.values)) {
-      stop("Error: Set quantreg=TRUE in ranger(...) for quantile prediction.")
+      stop("Error: Set quantreg=TRUE in spruce(...) for quantile prediction.")
     }
     
     if (is.null(data)) {
       ## OOB prediction
       if (is.null(object$random.node.values.oob)) {
-        stop("Error: Set keep.inbag=TRUE in ranger(...) for out-of-bag quantile prediction or provide new data in predict(...).")
+        stop("Error: Set keep.inbag=TRUE in spruce(...) for out-of-bag quantile prediction or provide new data in predict(...).")
       }
       node.values <- object$random.node.values.oob
     } else {
@@ -539,7 +536,7 @@ predict.ranger <- function(object, data = NULL, predict.all = FALSE,
                    treetype = object$treetype,
                    num.independent.variables = object$num.independent.variables,
                    num.trees = num.trees)
-    class(result) <- "ranger.prediction"
+    class(result) <- "spruce.prediction"
 
     if (is.null(what)) {
       ## Compute quantiles of distribution

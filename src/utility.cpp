@@ -1,12 +1,12 @@
 /*-------------------------------------------------------------------------------
- This file is part of ranger.
+ This file is part of spruce.
 
  Copyright (c) [2014-2018] [Marvin N. Wright]
 
  This software may be modified and distributed under the terms of the MIT license.
 
- Please note that the C++ core of ranger is distributed under MIT license and the
- R package "ranger" under GPL3 license.
+ Please note that the C++ core of spruce is distributed under MIT license and the
+ R package "spruce" under GPL3 license.
  #-------------------------------------------------------------------------------*/
 
 #include <math.h>
@@ -25,7 +25,7 @@
 #include "globals.h"
 #include "Data.h"
 
-namespace ranger {
+namespace spruce {
 
 void equalSplit(std::vector<uint>& result, uint start, uint end, uint num_parts) {
 
@@ -109,6 +109,7 @@ void drawWithoutReplacementSimple(std::vector<size_t>& result, std::mt19937_64& 
   // Set all to not selected
   std::vector<bool> temp;
   temp.resize(max, false);
+  //  initializing a std::vector named temp of type bool and resizing it to a specified size (max) with all elements initially set to false. 
 
   std::uniform_int_distribution<size_t> unif_dist(0, max - 1);
   for (size_t i = 0; i < num_samples; ++i) {
@@ -116,6 +117,7 @@ void drawWithoutReplacementSimple(std::vector<size_t>& result, std::mt19937_64& 
     do {
       draw = unif_dist(random_number_generator);
     } while (temp[draw]);
+    
     temp[draw] = true;
     result.push_back(draw);
   }
@@ -123,7 +125,10 @@ void drawWithoutReplacementSimple(std::vector<size_t>& result, std::mt19937_64& 
 
 void drawWithoutReplacementSimple(std::vector<size_t>& result, std::mt19937_64& random_number_generator, size_t max,
     const std::vector<size_t>& skip, size_t num_samples) {
-
+  
+  // auto& is a type deduction specifier that is used to declare a reference variable whose type is automatically deduced from the initializer. 
+  // If you need a mutable reference (where you can modify the referred object), you can use auto&. If you need a read-only reference, you can use const auto&.
+  // reserve is a member function of the std::vector container in C++. It reserves memory to accommodate at least num_samples elements without changing the size of the vector.
   result.reserve(num_samples);
 
   // Set all to not selected
@@ -141,6 +146,7 @@ void drawWithoutReplacementSimple(std::vector<size_t>& result, std::mt19937_64& 
         }
       }
     } while (temp[draw]);
+    
     temp[draw] = true;
     result.push_back(draw);
   }
@@ -683,20 +689,65 @@ double betaLogLik(double y, double mean, double phi) {
     phi = 1 - std::numeric_limits<double>::epsilon();
   }
 
-  return (mylgamma(phi) - mylgamma(mean * phi) - mylgamma((1 - mean) * phi) + (mean * phi - 1) * log(y)
-  + ((1 - mean) * phi - 1) * log(1 - y));
+  return (lgamma(phi) - lgamma(mean * phi) - lgamma((1 - mean) * phi) + (mean * phi - 1) * log(y)
+      + ((1 - mean) * phi - 1) * log(1 - y));
 }
 
-double mylgamma(double x) {
-#ifdef WIN_R_BUILD
-  // lgamma_r not available in mingw
-  return(lgamma(x));
-#else
-  int gamma_sign; // Sign for gamma function, not used
-  using namespace std; // Because lgamma_r is sometimes in global namespace, sometimes in std
-  return(lgamma_r(x, &gamma_sign));
-#endif
 
+
+double findMedianOfMedians(std::vector<double>& arr, size_t k) {
+  // Function to find median of medians
+  size_t n = arr.size();
+  
+  // If the array is small, sort and return the k-th element directly
+  if (n <= 5) {
+    sort(arr.begin(), arr.end());
+    return arr[k];
+  }
+  
+  // Divide the array into groups of 5
+  std::vector<double> medians;
+  
+  for (size_t i = 0; i < n; i += 5) {
+    std::vector<double> group;
+    for (size_t j = i; j < std::min(i + 5, n); ++j) {
+      group.push_back(arr[j]);
+    }
+    sort(group.begin(), group.end());
+    medians.push_back(group[group.size() / 2]); // Median of the current group
+  }
+  
+  // Recursively find the median of medians
+  double pivot = findMedianOfMedians(medians, medians.size() / 2);
+  
+  // Partition around the pivot
+  std::vector<double> left, right, equal; 
+  for (size_t i = 0; i < n; ++i) {
+    if (arr[i] < pivot)
+      left.push_back(arr[i]);
+    else if (arr[i] > pivot)
+      right.push_back(arr[i]);
+    else{
+      equal.push_back(arr[i]);
+    }
+  }
+  
+  // Determine the position of the pivot in the sorted array
+  int numLeft = left.size();
+  int num_equal = equal.size();
+  if (k < numLeft)
+    return findMedianOfMedians(left, k);
+  else if (k < numLeft + num_equal)
+    return pivot;
+  else
+    return findMedianOfMedians(right, k - numLeft - num_equal);
 }
 
-} // namespace ranger
+double findMedian(std::vector<double>& arr) {
+  // Function to find median of an array
+  size_t n = arr.size();
+  return findMedianOfMedians(arr, n / 2);
+}
+
+
+} // namespace spruce
