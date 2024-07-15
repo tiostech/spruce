@@ -66,7 +66,7 @@ Rcpp::List spruceCpp(uint treetype, Rcpp::NumericMatrix& input_x, Rcpp::NumericM
     bool node_stats, std::vector<double>& time_interest, bool use_time_interest) {
   
   Rcpp::List result;
-  std::cout << "Random Forest (Spruce) \n";
+  std::cout << "Here I am Random Forest (Spruce) \n";
 
   try {
     //  initializes a std::unique_ptr named forest that manages a pointer to an object of type Forest. 

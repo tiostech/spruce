@@ -54,27 +54,34 @@ namespace spruce
     double crystal_cost_core(double z, double y, double estimate);
     double crystal_cost(double z, double y, double estimate);
     double crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
+    double crystal_cost_gradient_core(double z, double y, double estimate);
+    double crystal_cost_gradient(double z, double y, double estimate);
+      
     double crystal_fit(size_t nodeID);
     double crystal_fit(std::vector<double> z_values, std::vector<double> y_values);
     double crystal_fast_fit(std::vector<double> z_values, std::vector<double> y_values);
     double crystal_fast_fit(size_t nodeID); 
+    std::vector<double> crystal_fast_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate);
     
     bool findBestSplitCrystal(size_t nodeID, std::vector<size_t> &possible_split_varIDs);
     void findBestSplitValueCrystal(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease);
     void findBestSplitValueCrystal(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right);
-    bool splitNodeInternalCrystal(size_t nodeID, std::vector<size_t> &possible_split_varIDs) override;
+    void findBestSplitValueCrystalApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right);
+
     //........
     
     double absolute_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
     double absolute_cost_fit(std::vector<double> z_values, std::vector<double> y_values);
     double absolute_cost_fit(size_t nodeID);
+    std::vector<double> absolute_cost_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate);
+      
 
     bool findBestSplitAbsoluteCost(size_t nodeID, std::vector<size_t> &possible_split_varIDs);
     void findBestSplitValueAbsoluteCost(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease);
     void findBestSplitValueAbsoluteCost(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right);
-    bool splitNodeInternalAbsoluteCost(size_t nodeID, std::vector<size_t> &possible_split_varIDs) override;
-    
-    bool splitNodeInternalV2(size_t nodeID, std::vector<size_t> &possible_split_varIDs);
+    void findBestSplitAbsoluteCostApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right);
+      
+    bool splitNodeInternalV2(size_t nodeID, std::vector<size_t> &possible_split_varIDs) override;
     
     
   // private:

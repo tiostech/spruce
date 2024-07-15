@@ -66,7 +66,6 @@ namespace spruce
                   double minprop, bool holdout, uint num_random_splits, uint max_depth, std::vector<double> *regularization_factor,
                   bool regularization_usedepth, std::vector<bool> *split_varIDs_used, bool save_node_stats)
   {
-
     this->data = data;
     this->mtry = mtry;
     this->num_samples = num_samples;
@@ -272,7 +271,7 @@ void Tree::grow(std::vector<double> *variable_importance)
       ++depth;
     }
   }
-  std::cout << "depth = " << depth << ".......done growing\n";
+  std::cout << "depth = " << depth << "....... done \n";
   // Delete sampleID vector to save memory
   sampleIDs.clear();
   sampleIDs.shrink_to_fit();
@@ -493,7 +492,6 @@ void Tree::grow(std::vector<double> *variable_importance)
     createPossibleSplitVarSubset(possible_split_varIDs);
 
     // Call subclass method, sets split_varIDs and split_values
-    // bool stop = splitNodeInternalCrystal(nodeID, possible_split_varIDs);  // crystal loss 
     bool stop; 
     if(splitrule == VARIANCE){
       stop = splitNodeInternal(nodeID, possible_split_varIDs); //  split node

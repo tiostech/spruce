@@ -783,7 +783,7 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }  
   } else if(splitrule == "absolute"){
     if(treetype == 3){
-      splitrule.num <- 1
+      splitrule.num <- 9
     }else{
       stop("Error: absolute splitrule applicable to regression data only.")
     }
@@ -791,7 +791,7 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     if(treetype == 3){
       splitrule.num <- 8
     }else{
-      stop("Error: absolute splitrule applicable to regression data only.")
+      stop("Error: crystal splitrule applicable to regression data only.")
     }
   }else {
     stop("Error: Unknown splitrule.")
@@ -937,6 +937,7 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }
   }
   
+  print("......... here I am spruce.R .......")
   ## Call spruce
   result <- spruceCpp(treetype, x, y.mat, z.mat, test_x, independent.variable.names, mtry,
                       num.trees, verbose, seed, num.threads, write.forest, importance.mode,

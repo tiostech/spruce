@@ -100,6 +100,37 @@ namespace spruce
     return cost;
   }
 
+double TreeRegression::crystal_cost_gradient_core(double z, double y, double estimate)
+{
+  double gradient = 0;
+  if (estimate > y)
+  {
+    gradient = 1;
+  }
+  else if (estimate >= z)
+  {
+    gradient = -2;
+  }
+  else
+  {
+    gradient = -4;
+  }
+  return gradient;
+}
+
+double TreeRegression::crystal_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = 0;
+  if (y >= z)
+  {
+    gradient = crystal_cost_gradient_core(z, y, estimate);
+  }else
+  {
+    gradient = crystal_cost_gradient_core(y, z, (z + y) - estimate);
+  }
+  return gradient;
+}
+
   double TreeRegression::crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
   {
     double cost = 0;
@@ -117,37 +148,12 @@ namespace spruce
     return cost;
   }
 
-  double TreeRegression::crystal_fit(std::vector<double> z_values, std::vector<double> y_values)
-  {
-
-    std::vector<double> possible_cost(10000); // Pre-allocate vector
-    int num_samples_in_node = y_values.size();
-    // Compute possible_loss in parallel
-
-    for (size_t i = 0; i < 10000; i++)
-    {
-      double estimate = 0.1 * i;
-      double sum_cost_in_node = 0;
-
-      for (size_t pos = 0; pos < num_samples_in_node; ++pos)
-      {
-        sum_cost_in_node += crystal_cost(z_values[pos], y_values[pos], estimate);
-      }
-      possible_cost[i] = sum_cost_in_node / static_cast<double>(num_samples_in_node);
+  std::vector<double> TreeRegression::crystal_fast_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate){
+    std::vector<double> g_values(y_values.size());
+    for(size_t i = 0; i < y_values.size(); i++){
+      g_values[i] = crystal_cost_gradient(z_values[i], y_values[i], estimate);
     }
-
-    // for (size_t id = 0; id < possible_cost.size(); ++id) {
-    //   std::cout << id << "->" << possible_cost[id] << " ";
-    // }
-    // std::cout << "all possible costs" << "\n";
-    
-    // Find index of minimal value in possible_cost
-    auto min_index = std::min_element(possible_cost.begin(), possible_cost.end()) - possible_cost.begin();
-
-    // Calculate best_estimate based on min_index
-    double best_estimate = 0.1 * min_index;
-
-    return (best_estimate);
+    return g_values;
   }
 
   double TreeRegression::crystal_fast_fit(std::vector<double> z_values, std::vector<double> y_values)
@@ -197,50 +203,6 @@ namespace spruce
   double best_estimate = (left + right) / 2.0; 
   return best_estimate; // Return the best estimate of the minimum
 }
-
-
-  double TreeRegression::crystal_fit(size_t nodeID)
-  {
-    size_t num_samples_in_node = end_pos[nodeID] - start_pos[nodeID];
-    // Precompute y and z values
-    std::vector<double> y_values(num_samples_in_node);
-    std::vector<double> z_values(num_samples_in_node);
-
-    for (size_t i = start_pos[nodeID]; i < end_pos[nodeID]; ++i)
-    {
-      size_t sampleID = sampleIDs[i];
-      y_values[i - start_pos[nodeID]] = data->get_y(sampleID, 0);
-      z_values[i - start_pos[nodeID]] = data->get_z(sampleID, 0);
-    }
-
-    std::vector<double> possible_cost(10000); // Pre-allocate vector
-                                              // Compute possible_loss in parallel
-
-    for (size_t i = 0; i < 10000; i++)
-    {
-      double estimate = 0.1 * i;
-      double sum_cost_in_node = 0;
-
-      for (size_t pos = 0; pos < num_samples_in_node; ++pos)
-      {
-        sum_cost_in_node += crystal_cost(z_values[pos], y_values[pos], estimate);
-      }
-      possible_cost[i] = sum_cost_in_node / static_cast<double>(num_samples_in_node);
-    }
-    
-    // for (size_t id = 0; id < possible_cost.size(); ++id) {
-    //   std::cout << id << "->" << possible_cost[id] << " ";
-    // }
-    // std::cout << "all possible costs" << "\n";
-    
-    // Find index of minimal value in possible_cost
-    auto min_index = std::min_element(possible_cost.begin(), possible_cost.end()) - possible_cost.begin();
-
-    // Calculate best_estimate based on min_index
-    double best_estimate = 0.1 * min_index;
-
-    return (best_estimate);
-  }
 
   double TreeRegression::crystal_fast_fit(size_t nodeID)
 {
@@ -298,74 +260,6 @@ namespace spruce
   return best_estimate; // Return the best estimate of the minimum
 }
 
-
-  bool TreeRegression::splitNodeInternalCrystal(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
-  {
-
-    size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
-
-    // Save node statistics
-    if (save_node_stats)
-    {
-      num_samples_nodes[nodeID] = num_samples_node;
-      node_predictions[nodeID] = crystal_fast_fit(nodeID);
-    }
-    // std::cout << ".....start ................ " << "\n";
-    // std::cout << ".....num_samples_nodes[nodeID] = " << num_samples_nodes[nodeID] << "\n";
-    // std::cout << ".....node_predictions[nodeID] = " << node_predictions[nodeID] << "\n";
-    // std::cout << ".....last_left_nodeID = " << last_left_nodeID << "\n";
-    // std::cout << "max_depth = " << max_depth << "\n";
-    // std::cout << ".....depth = " << depth << "\n";
-    
-    // Stop if maximum node size or depth reached
-    if (num_samples_node <= min_node_size || (nodeID >= last_left_nodeID && max_depth > 0 && depth >= max_depth))
-    {
-      split_values[nodeID] = crystal_fast_fit(nodeID);
-      std::cout << "nodeID = " << nodeID << " terminal node value = " << split_values[nodeID] << "\n";
-      // save terminal fitted value in split_values[nodeID]
-      
-      return true;
-    }
-    
-    // Check if node is pure and set split_value to estimate and stop if pure
-    bool pure = true;
-    double pure_value_y = 0;
-    double pure_value_z = 0;
-
-    for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
-    {
-      size_t sampleID = sampleIDs[pos];
-      double y = data->get_y(sampleID, 0);
-      double z = data->get_z(sampleID, 0);
-      if (pos != start_pos[nodeID] && (y != pure_value_y || z != pure_value_z))
-      {
-        pure = false;
-        break;
-      }
-      pure_value_y = y;
-      pure_value_z = z;
-    }
-    if (pure)
-    {
-      split_values[nodeID] = pure_value_y;
-      return true;
-    }
-
-    // Find best split, stop if no decrease of impurity
-    bool stop;
-    stop = findBestSplitCrystal(nodeID, possible_split_varIDs);
-    // set split_varIDs[nodeID], split_value[nodeID] if split  (> min_bucket_size), stop = false
-    // set 0, 0 as default if not split, stop = true 
-    // std::cout << ".....end .... split................." << "\n";
-    
-    if (stop)
-    {
-      split_values[nodeID] = crystal_fast_fit(nodeID); // reset fitted value 
-      return true;
-    }
-
-    return false;
-  }
 
   bool TreeRegression::findBestSplitCrystal(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
   {
@@ -461,7 +355,8 @@ namespace spruce
       std::fill_n(sums.begin(), num_splits, 0);
       std::fill_n(counter.begin(), num_splits, 0);
 
-      findBestSplitValueCrystal(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      // findBestSplitValueCrystal(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      findBestSplitValueCrystalApprox(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
     }
   }
 
@@ -493,6 +388,17 @@ namespace spruce
     //   std::cout << n_right[i] << " ";
     // }
     
+    std::vector<double> parent_y, parent_z;
+    for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
+    {
+      size_t sampleID = sampleIDs[pos];
+      double y = data->get_y(sampleID, 0);
+      double z = data->get_z(sampleID, 0);
+      parent_y.push_back(y);
+      parent_z.push_back(z);
+    }
+    double parent_cost = crystal_cost(parent_z, parent_y, crystal_fast_fit(parent_z, parent_y)); // fast_fit
+    
     for (size_t i = 0; i < num_splits; ++i)
     {
 
@@ -509,7 +415,7 @@ namespace spruce
         continue; // no change 
       }
 
-      std::vector<double> left_y, left_z, right_y, right_z, parent_y, parent_z;
+      std::vector<double> left_y, left_z, right_y, right_z;
 
       for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
       {
@@ -517,8 +423,6 @@ namespace spruce
         double value = data->get_x(sampleID, varID);
         double y = data->get_y(sampleID, 0);
         double z = data->get_z(sampleID, 0);
-        parent_y.push_back(y);
-        parent_z.push_back(z);
 
         if (value > possible_split_values[i]){
           right_y.push_back(y);
@@ -530,7 +434,6 @@ namespace spruce
       }
 
       // compute cost
-      double parent_cost = crystal_cost(parent_z, parent_y, crystal_fast_fit(parent_z, parent_y)); // fast_fit
       double left_cost = crystal_cost(left_z, left_y, crystal_fast_fit(left_z, left_y));
       double right_cost = crystal_cost(right_z, right_y, crystal_fast_fit(right_z, right_y));
      
@@ -567,8 +470,92 @@ namespace spruce
     // std::cout << "best_decrease = " << best_decrease << "\n";
   }
 
-// absolute loss 
+  void TreeRegression::findBestSplitValueCrystalApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right){
+  
+  // get estimate of parent node 
+  // calculate gradient of loss 
+  // CART split 
+  
+  // std::cout << "use local boosting to find approximated estimate";
+  std::vector<double> parent_y, parent_z;
+  for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
+  {
+    size_t sampleID = sampleIDs[pos];
+    double value = data->get_x(sampleID, varID);
+    double y = data->get_y(sampleID, 0);
+    double z = data->get_z(sampleID, 0);
+    parent_y.push_back(y);
+    parent_z.push_back(z);
+  }
+  
+  // relabel y to w  
+  double parent_estimate = crystal_fast_fit(parent_z, parent_y);
+  std::vector<double> parent_g = crystal_fast_relabel(parent_z, parent_y, parent_estimate);
+  
+  double sum_node = 0;
+  for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
+  {
+    size_t sampleID = sampleIDs[pos];
+    size_t idx = std::lower_bound(possible_split_values.begin(), possible_split_values.end(),
+                                  data->get_x(sampleID, varID)) - possible_split_values.begin();
+    
+    sums[idx] += parent_g[pos - 1 - start_pos[nodeID]];
+    ++counter[idx];
+  }
+  
+  size_t n_left = 0;
+  double sum_left = 0;
+  
+  for (size_t i = 0; i < possible_split_values.size() - 1; ++i){
+    
+    // Stop if nothing here
+    if (counter[i] == 0)
+    {
+      continue;
+    }
+    
+    n_left += counter[i];
+    sum_left += sums[i];
+    
+    // Stop if right child empty
+    size_t n_right = num_samples_node - n_left;
+    if (n_right == 0)
+    {
+      break;
+    }
+    
+    // Stop if minimal bucket size reached
+    if (n_left < min_bucket || n_right < min_bucket)
+    {
+      continue;
+    }
+    
+    double sum_right = sum_node - sum_left;
+    double decrease = sum_left * sum_left / (double)n_left + sum_right * sum_right / (double)n_right;
+    
+    // Regularization
+    regularize(decrease, varID);
+    
+    // If better than before, use this
+    if (decrease > best_decrease)
+    {
+      // Use mid-point split
+      best_value = (possible_split_values[i] + possible_split_values[i + 1]) / 2;
+      best_varID = varID;
+      best_decrease = decrease;
+      
+      // Use smaller value if average is numerically the same as the larger value
+      if (best_value == possible_split_values[i + 1])
+      {
+        best_value = possible_split_values[i];
+      }
+    }
+  }
+}
 
+
+
+// absolute loss 
 
 double TreeRegression::absolute_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
 {
@@ -587,6 +574,19 @@ double TreeRegression::absolute_cost_fit(std::vector<double> z_values, std::vect
   double best_estimate = findMedian(y_values);
   
   return(best_estimate);
+}
+
+std::vector<double> TreeRegression::absolute_cost_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate){
+  
+  std::vector<double> g_values(y_values.size());
+  for(size_t i = 0; i < y_values.size(); i++){
+    if (y_values[i] >= estimate){
+      g_values[i] = 1;
+    }else{
+      g_values[i] = -1;
+    }
+  }
+  return g_values;
 }
 
 double TreeRegression::absolute_cost_fit(size_t nodeID)
@@ -608,81 +608,6 @@ double TreeRegression::absolute_cost_fit(size_t nodeID)
   double best_estimate = findMedian(y_values);
   
   return best_estimate; // Return the best estimate of the minimum
-}
-
-
-
-bool TreeRegression::splitNodeInternalAbsoluteCost(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
-{
-  
-  size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
-  
-  // Save node statistics
-  if (save_node_stats)
-  {
-    num_samples_nodes[nodeID] = num_samples_node;
-    node_predictions[nodeID] = absolute_cost_fit(nodeID);
-  }
-  // std::cout << ".....start ................ " << "\n";
-  // std::cout << ".....num_samples_nodes[nodeID] = " << num_samples_nodes[nodeID] << "\n";
-  // std::cout << ".....node_predictions[nodeID] = " << node_predictions[nodeID] << "\n";
-  // std::cout << ".....last_left_nodeID = " << last_left_nodeID << "\n";
-  // std::cout << "max_depth = " << max_depth << "\n";
-  // std::cout << ".....depth = " << depth << "\n";
-  // 
-
-  
-  // Stop if maximum node size or depth reached
-  if (num_samples_node <= min_node_size || (nodeID >= last_left_nodeID && max_depth > 0 && depth >= max_depth))
-  {
-    split_values[nodeID] = absolute_cost_fit(nodeID);
-    std::cout << "nodeID = " << nodeID << " terminal node value = " << split_values[nodeID] << "\n";
-    // save terminal fitted value in split_values[nodeID]
-    
-    return true;
-  }
-  
-
-  // Check if node is pure and set split_value to estimate and stop if pure
-  bool pure = true;
-  double pure_value_y = 0;
-  double pure_value_z = 0;
-  
-  for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
-  {
-    size_t sampleID = sampleIDs[pos];
-    double y = data->get_y(sampleID, 0);
-    double z = data->get_z(sampleID, 0);
-    if (pos != start_pos[nodeID] && (y != pure_value_y || z != pure_value_z))
-    {
-      pure = false;
-      break;
-    }
-    pure_value_y = y;
-    pure_value_z = z;
-  }
-  if (pure)
-  {
-    split_values[nodeID] = pure_value_y;
-    return true;
-  }
-
-  
-  // Find best split, stop if no decrease of impurity
-  bool stop;
-  stop = findBestSplitAbsoluteCost(nodeID, possible_split_varIDs);
-  // set split_varIDs[nodeID], split_value[nodeID] if split  (> min_bucket_size), stop = false
-  // set 0, 0 as default if not split, stop = true 
-  
-  
-
-  if (stop)
-  {
-    split_values[nodeID] = absolute_cost_fit(nodeID); // reset fitted value 
-    return true;
-  }
-  
-  return false;
 }
 
 bool TreeRegression::findBestSplitAbsoluteCost(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
@@ -779,10 +704,12 @@ void TreeRegression::findBestSplitValueAbsoluteCost(size_t nodeID, size_t varID,
     std::fill_n(sums.begin(), num_splits, 0);
     std::fill_n(counter.begin(), num_splits, 0);
     
-    findBestSplitValueAbsoluteCost(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+    // findBestSplitValueAbsoluteCost(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+    // use local gradient approximation
+    findBestSplitAbsoluteCostApprox(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+    
   }
 }
-
 
 void TreeRegression::findBestSplitValueAbsoluteCost(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right)
 {
@@ -810,25 +737,101 @@ void TreeRegression::findBestSplitValueAbsoluteCost(size_t nodeID, size_t varID,
   // for (size_t i = 0; i < num_splits; ++i) {
   //   std::cout << n_right[i] << " ";
   // }
-  
-  for (size_t i = 0; i < num_splits; ++i)
+  std::vector<double> parent_y, parent_z;
+  for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
   {
-    
-    // Stop if one child too small
-    size_t n_left = num_samples_node - n_right[i];
-    if (n_left < 2 || n_right[i] < 2)
-    {
-      continue; // no change 
+    size_t sampleID = sampleIDs[pos];
+    double y = data->get_y(sampleID, 0);
+    double z = data->get_z(sampleID, 0);
+    parent_y.push_back(y);
+    parent_z.push_back(z);
+  }
+  double parent_cost = absolute_cost(parent_z, parent_y, absolute_cost_fit(parent_z, parent_y)); 
+  
+  
+  for (size_t i = 0; i < num_splits; ++i){ 
+      
+      // Stop if one child too small
+      size_t n_left = num_samples_node - n_right[i];
+      if (n_left < 2 || n_right[i] < 2)
+      {
+        continue; // no change 
+      }
+      
+      // Stop if minimal bucket size reached
+      if (n_left < min_bucket || n_right[i] < min_bucket)
+      {
+        continue; // no change 
+      }
+      
+      std::vector<double> left_y, left_z, right_y, right_z;
+      
+      for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
+      {
+        size_t sampleID = sampleIDs[pos];
+        double value = data->get_x(sampleID, varID);
+        double y = data->get_y(sampleID, 0);
+        double z = data->get_z(sampleID, 0);
+        // parent_y.push_back(y);
+        // parent_z.push_back(z);
+        
+        if (value > possible_split_values[i]){
+          right_y.push_back(y);
+          right_z.push_back(z);
+        }else{
+          left_y.push_back(y);
+          left_z.push_back(z);
+        }
+      }
+      
+      
+      // compute cost
+      double left_cost = absolute_cost(left_z, left_y, absolute_cost_fit(left_z, left_y));
+      double right_cost = absolute_cost(right_z, right_y, absolute_cost_fit(right_z, right_y));
+      
+      double decrease = parent_cost - left_cost - right_cost;
+      // 
+      // std::cout << "parent_cost = " << parent_cost <<  ", parent estimate = " << absolute_cost_fit(parent_z, parent_y) << "\n"; 
+      // std::cout << "left_cost = " << left_cost << ", left estimate = " << absolute_cost_fit(left_z, left_y) << "\n";
+      // std::cout << "right_cost = " << right_cost << " right estimate = " << absolute_cost_fit(right_z, right_y) << "\n";
+      
+      // Stop if no result
+      if (std::isnan(decrease))
+      {
+        continue;
+      }
+      
+      // Regularization (negative values)
+      regularizeNegative(decrease, varID);
+      
+      // If better than before, use this 
+      if (decrease > best_decrease)
+      {
+        best_value = possible_split_values[i];  // (possible_split_values[i] + possible_split_values[i + 1]) / 2;
+        best_varID = varID;
+        best_decrease = decrease;
+        
+        // Use smaller value if average is numerically the same as the larger value
+        if (best_value == possible_split_values[i + 1])
+        {
+          best_value = possible_split_values[i];
+        }
+      }
     }
+  // std::cout << "varID = " << varID << "\n";
+  // std::cout << "num_samples_node = " << num_samples_node << "\n";
+  // std::cout << "best_varID = " << best_varID << "\n";
+  // std::cout << "best_value = " << best_value << "\n";
+  // std::cout << "best_decrease = " << best_decrease << "\n";
+}
+
+void TreeRegression::findBestSplitAbsoluteCostApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right){
     
-    // Stop if minimal bucket size reached
-    if (n_left < min_bucket || n_right[i] < min_bucket)
-    {
-      continue; // no change 
-    }
+    // get estimate of parent node 
+    // calculate gradient of loss 
+    // CART split 
     
-    std::vector<double> left_y, left_z, right_y, right_z, parent_y, parent_z;
-    
+    std::vector<double> parent_y, parent_z;
     for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
     {
       size_t sampleID = sampleIDs[pos];
@@ -837,62 +840,77 @@ void TreeRegression::findBestSplitValueAbsoluteCost(size_t nodeID, size_t varID,
       double z = data->get_z(sampleID, 0);
       parent_y.push_back(y);
       parent_z.push_back(z);
-      
-      if (value > possible_split_values[i]){
-        right_y.push_back(y);
-        right_z.push_back(z);
-      }else{
-        left_y.push_back(y);
-        left_z.push_back(z);
-      }
     }
     
-    
-    // compute cost
-    double parent_cost = absolute_cost(parent_z, parent_y, absolute_cost_fit(parent_z, parent_y)); // fast_fit
-    double left_cost = absolute_cost(left_z, left_y, absolute_cost_fit(left_z, left_y));
-    double right_cost = absolute_cost(right_z, right_y, absolute_cost_fit(right_z, right_y));
-    
-    double decrease = parent_cost - left_cost - right_cost;
-    // 
-    // std::cout << "parent_cost = " << parent_cost <<  ", parent estimate = " << absolute_cost_fit(parent_z, parent_y) << "\n"; 
-    // std::cout << "left_cost = " << left_cost << ", left estimate = " << absolute_cost_fit(left_z, left_y) << "\n";
-    // std::cout << "right_cost = " << right_cost << " right estimate = " << absolute_cost_fit(right_z, right_y) << "\n";
-    
-    // Stop if no result
-    if (std::isnan(decrease))
+    // relabel y to w  
+    double parent_estimate = absolute_cost_fit(nodeID);
+    std::vector<double> parent_g = absolute_cost_relabel(parent_z, parent_y, parent_estimate);
+
+    double sum_node = 0;
+    for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
     {
-      continue;
+      size_t sampleID = sampleIDs[pos];
+      size_t idx = std::lower_bound(possible_split_values.begin(), possible_split_values.end(),
+                                    data->get_x(sampleID, varID)) - possible_split_values.begin();
+
+      sums[idx] += parent_g[pos - 1 - start_pos[nodeID]];
+      ++counter[idx];
     }
     
-    // Regularization (negative values)
-    regularizeNegative(decrease, varID);
-    
-    // If better than before, use this 
-    if (decrease > best_decrease)
-    {
-      best_value = possible_split_values[i];  // (possible_split_values[i] + possible_split_values[i + 1]) / 2;
-      best_varID = varID;
-      best_decrease = decrease;
+    size_t n_left = 0;
+    double sum_left = 0;
       
-      // Use smaller value if average is numerically the same as the larger value
-      if (best_value == possible_split_values[i + 1])
+    for (size_t i = 0; i < possible_split_values.size() - 1; ++i){
+      
+      // Stop if nothing here
+      if (counter[i] == 0)
       {
-        best_value = possible_split_values[i];
+        continue;
+      }
+      
+      n_left += counter[i];
+      sum_left += sums[i];
+      
+      // Stop if right child empty
+      size_t n_right = num_samples_node - n_left;
+      if (n_right == 0)
+      {
+        break;
+      }
+      
+      // Stop if minimal bucket size reached
+      if (n_left < min_bucket || n_right < min_bucket)
+      {
+        continue;
+      }
+      
+      double sum_right = sum_node - sum_left;
+      double decrease = sum_left * sum_left / (double)n_left + sum_right * sum_right / (double)n_right;
+      
+      // Regularization
+      regularize(decrease, varID);
+      
+      // If better than before, use this
+      if (decrease > best_decrease)
+      {
+        // Use mid-point split
+        best_value = (possible_split_values[i] + possible_split_values[i + 1]) / 2;
+        best_varID = varID;
+        best_decrease = decrease;
+        
+        // Use smaller value if average is numerically the same as the larger value
+        if (best_value == possible_split_values[i + 1])
+        {
+          best_value = possible_split_values[i];
+        }
       }
     }
-  }
-  // std::cout << "varID = " << varID << "\n";
-  // std::cout << "num_samples_node = " << num_samples_node << "\n";
-  // std::cout << "best_varID = " << best_varID << "\n";
-  // std::cout << "best_value = " << best_value << "\n";
-  // std::cout << "best_decrease = " << best_decrease << "\n";
 }
 
 
 bool TreeRegression::splitNodeInternalV2(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
 {
-  
+
   size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
   
   // Save node statistics

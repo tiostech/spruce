@@ -94,8 +94,6 @@ public:
 
   bool splitNode(size_t nodeID);
   virtual bool splitNodeInternal(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
-  virtual bool splitNodeInternalCrystal(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
-  virtual bool splitNodeInternalAbsoluteCost(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
   virtual bool splitNodeInternalV2(size_t nodeID, std::vector<size_t>& possible_split_varIDs) = 0;
   
   
