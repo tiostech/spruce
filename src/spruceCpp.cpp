@@ -33,10 +33,7 @@
 
 #include "globals.h"
 #include "Forest.h"
-// #include "ForestClassification.h"
 #include "ForestRegression.h"
-// #include "ForestSurvival.h"
-// #include "ForestProbability.h"
 #include "Data.h"
 #include "DataChar.h"
 #include "DataRcpp.h"
