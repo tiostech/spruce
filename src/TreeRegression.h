@@ -50,13 +50,28 @@ namespace spruce
       return prediction_terminal_nodeIDs[sampleID];
     }
     
-    // .......
-    double crystal_cost_core(double z, double y, double estimate);
+    // ....... crystal_squared 
+    // ....... crystal_ 
+    // ....... crystal_absolute 
+    
+    double crystal_squared_cost(double z, double y, double estimate);
+    double crystal_squared_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
+    double crystal_squared_cost_gradient(double z, double y, double estimate);
+
+    double crystal_absolute_cost(double z, double y, double estimate);
+    double crystal_absolute_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
+    double crystal_absolute_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_ABSN4N2P1_cost_core(double z, double y, double estimate);
+    double crystal_ABSN4N2P1_cost(double z, double y, double estimate);
+    double crystal_ABSN4N2P1_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
+    double crystal_ABSN4N2P1_cost_gradient_core(double z, double y, double estimate);
+    double crystal_ABSN4N2P1_cost_gradient(double z, double y, double estimate);
+    // 
+    
     double crystal_cost(double z, double y, double estimate);
     double crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
-    double crystal_cost_gradient_core(double z, double y, double estimate);
     double crystal_cost_gradient(double z, double y, double estimate);
-      
     double crystal_cost_fit(std::vector<double> z_values, std::vector<double> y_values);
     double crystal_cost_fit(size_t nodeID); 
     std::vector<double> crystal_cost_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate);
@@ -66,7 +81,10 @@ namespace spruce
     void findBestSplitValueCrystalCost(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right);
     void findBestSplitValueCrystalCostApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right);
 
-    //........
+    
+
+    
+    //........ absolute
     
     double absolute_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
     

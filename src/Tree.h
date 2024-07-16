@@ -38,7 +38,7 @@ public:
   Tree& operator=(const Tree&) = delete;
 
   void init(const Data* data, uint mtry, size_t num_samples, uint seed, std::vector<size_t>* deterministic_varIDs,
-      std::vector<double>* split_select_weights, ImportanceMode importance_mode, uint min_node_size, uint min_bucket,
+      std::vector<double>* split_select_weights, ImportanceMode importance_mode, OptimMode optim_mode, uint min_node_size, uint min_bucket,
       bool sample_with_replacement, bool memory_saving_splitting, SplitRule splitrule,
       std::vector<double>* case_weights, std::vector<size_t>* manual_inbag, bool keep_inbag,
       std::vector<double>* sample_fraction, double alpha, double minprop, bool holdout, uint num_random_splits,
@@ -234,6 +234,7 @@ public:
   // Variable importance for all variables
   std::vector<double>* variable_importance;
   ImportanceMode importance_mode;
+  OptimMode optim_mode;
 
   // When growing here the OOB set is used
   // Terminal nodeIDs for prediction samples

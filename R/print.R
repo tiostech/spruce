@@ -102,12 +102,12 @@ print.spruce.prediction <- function(x, ...) {
     cat("Number of unique death times:    ", length(x$unique.death.times), "\n")
   }
 }
-
+##' @export
 str.spruce.forest <- function(object, max.level = 2, ...) {
   class(object) <- "list"
   str(object, max.level = max.level, ...)
 }
-
+##' @export
 str.spruce <- function(object, max.level = 2, ...) {
   class(object) <- "list"
   str(object, max.level = max.level, ...)

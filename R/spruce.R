@@ -232,7 +232,7 @@
 ##' @importFrom Matrix Matrix
 ##' @export
 spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 500, mtry = NULL,
-                   importance = "none", write.forest = TRUE, probability = FALSE,
+                   importance = "none", optim = 'approximate', write.forest = TRUE, probability = FALSE,
                    min.node.size = NULL, min.bucket = NULL, max.depth = NULL, 
                    replace = TRUE, sample.fraction = ifelse(replace, 1, 0.632), 
                    case.weights = NULL, class.weights = NULL, splitrule = NULL, 
@@ -629,6 +629,18 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     stop("Error: Unknown importance mode.")
   }
   
+  ## Optim Mode 
+  if (is.null(optim) || optim == "exact") {
+    optim.mode <- 0
+    print("optim.mode = 0 (EXACT)")
+  } else if (optim == "approximate") {
+    optim.mode <- 1
+    print("optim.mode = 1 (APPROXIMATE)")
+  }else {
+      stop("Error: Unknown optim mode.")
+    }
+  
+  
   ## Case weights: NULL for no weights or all weights equal
   if (is.null(case.weights) || length(unique(case.weights)) == 1) {
     case.weights <- c(0,0)
@@ -737,7 +749,7 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }
   } else if (splitrule == "variance") {
     if (treetype == 3) {
-      splitrule.num <- 10
+      splitrule.num <- 8
     } else {
       stop("Error: variance splitrule applicable to regression data only.")
     }
@@ -787,11 +799,26 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }else{
       stop("Error: absolute splitrule applicable to regression data only.")
     }
-  } else if(splitrule == "crystal"){
+  } else if(splitrule == "crystal_absolute"){
     if(treetype == 3){
-      splitrule.num <- 8
+      splitrule.num <- 10
+      print("splitrule = 10")
     }else{
-      stop("Error: crystal splitrule applicable to regression data only.")
+      stop("Error: crystal_absolute splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_absn4n2p1"){
+    if(treetype == 3){
+      splitrule.num <- 11
+      print("splitrule = 11")
+    }else{
+      stop("Error: crystal_absn4n2p1 splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_squared"){
+    if(treetype == 3){
+      splitrule.num <- 12
+      print("splitrule = 12")
+    }else{
+      stop("Error: crystal_squared splitrule applicable to regression data only.")
     }
   }else {
     stop("Error: Unknown splitrule.")
@@ -937,10 +964,9 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }
   }
   
-  print("......... here I am spruce.R .......")
   ## Call spruce
   result <- spruceCpp(treetype, x, y.mat, z.mat, test_x, independent.variable.names, mtry,
-                      num.trees, verbose, seed, num.threads, write.forest, importance.mode,
+                      num.trees, verbose, seed, num.threads, write.forest, importance.mode, optim.mode, 
                       min.node.size, min.bucket, split.select.weights, use.split.select.weights,
                       always.split.variables, use.always.split.variables,
                       prediction.mode, loaded.forest, snp.data,

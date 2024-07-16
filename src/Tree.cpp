@@ -25,7 +25,7 @@ namespace spruce
                                                                                                                                                      0),
                  manual_inbag(0), oob_sampleIDs(0), save_node_stats(false), num_samples_nodes(0), node_predictions(0),
                  holdout(false), keep_inbag(false), data(0), regularization_factor(0), regularization_usedepth(false),
-                 split_varIDs_used(0), variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), sample_with_replacement(
+                 split_varIDs_used(0), variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), optim_mode(DEFAULT_OPTIM_MODE),  sample_with_replacement(
                                                                                                              true),
                  sample_fraction(0), memory_saving_splitting(false), splitrule(DEFAULT_SPLITRULE), alpha(DEFAULT_ALPHA), minprop(
                                                                                                                              DEFAULT_MINPROP),
@@ -39,7 +39,7 @@ namespace spruce
              std::vector<double> &split_values) : mtry(0), num_samples(0), num_samples_oob(0), min_node_size(0), min_bucket(0), deterministic_varIDs(0), split_select_weights(0), case_weights(0), manual_inbag(0), split_varIDs(split_varIDs), split_values(split_values), child_nodeIDs(child_nodeIDs), oob_sampleIDs(0), save_node_stats(false), num_samples_nodes(0), node_predictions(0),
                                                   holdout(false), keep_inbag(false), data(0), regularization_factor(0), regularization_usedepth(false), split_varIDs_used(
                                                                                                                                                             0),
-                                                  variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), sample_with_replacement(true), sample_fraction(
+                                                  variable_importance(0), importance_mode(DEFAULT_IMPORTANCE_MODE), optim_mode(DEFAULT_OPTIM_MODE), sample_with_replacement(true), sample_fraction(
                                                                                                                                                        0),
                                                   memory_saving_splitting(false), splitrule(DEFAULT_SPLITRULE), alpha(DEFAULT_ALPHA), minprop(
                                                                                                                                           DEFAULT_MINPROP),
@@ -60,7 +60,7 @@ namespace spruce
   // In summary, both references and pointers serve similar purposes of indirect access but differ in syntax, initialization, flexibility, and safety considerations. The choice between them depends on the specific requirements of your program and the problem you are solving.
 
   void Tree::init(const Data *data, uint mtry, size_t num_samples, uint seed, std::vector<size_t> *deterministic_varIDs,
-                  std::vector<double> *split_select_weights, ImportanceMode importance_mode, uint min_node_size, uint min_bucket,
+                  std::vector<double> *split_select_weights, ImportanceMode importance_mode, OptimMode optim_mode, uint min_node_size, uint min_bucket,
                   bool sample_with_replacement, bool memory_saving_splitting, SplitRule splitrule, std::vector<double> *case_weights,
                   std::vector<size_t> *manual_inbag, bool keep_inbag, std::vector<double> *sample_fraction, double alpha,
                   double minprop, bool holdout, uint num_random_splits, uint max_depth, std::vector<double> *regularization_factor,
@@ -83,6 +83,7 @@ namespace spruce
     this->deterministic_varIDs = deterministic_varIDs;
     this->split_select_weights = split_select_weights;
     this->importance_mode = importance_mode;
+    this->optim_mode = optim_mode;
     this->min_node_size = min_node_size;
     this->min_bucket = min_bucket;
     this->sample_with_replacement = sample_with_replacement;
@@ -194,90 +195,89 @@ namespace spruce
   //   cleanUpInternal();
   // }
 
-void Tree::grow(std::vector<double> *variable_importance)
-{
-  // Allocate memory for tree growing
-  allocateMemory();
-  
-  this->variable_importance = variable_importance; // Variable importance for all variables, update after splitting
-  
-  // Bootstrap, dependent if weighted or not and with or without replacement
-  if (!case_weights->empty())
+  void Tree::grow(std::vector<double> *variable_importance)
   {
-    if (sample_with_replacement)
-    {
-      bootstrapWeighted();
-    }
-    else
-    {
-      bootstrapWithoutReplacementWeighted();
-    }
-  }
-  else if (sample_fraction->size() > 1)
-  {
-    if (sample_with_replacement)
-    {
-      bootstrapClassWise();
-    }
-    else
-    {
-      bootstrapWithoutReplacementClassWise();
-    }
-  }
-  else if (!manual_inbag->empty())
-  {
-    setManualInbag();
-  }
-  else
-  {
-    if (sample_with_replacement)
-    {
-      bootstrap();
-    }
-    else
-    {
-      bootstrapWithoutReplacement();
-    }
-  }
-  
-  // Init start and end positions
-  start_pos[0] = 0;              // node_ID
-  end_pos[0] = sampleIDs.size(); // node_ID // All sampleIDs in the tree, will be re-ordered while splitting
-  
-  // While not all nodes terminal, split next node
-  size_t num_open_nodes = 1;
-  size_t i = 0;
-  depth = 0;
-  
-  while (num_open_nodes > 0)
-  {
+    // Allocate memory for tree growing
+    allocateMemory();
     
-    // find the node where the test data is in 
-    // Split node
-    bool is_terminal_node = splitNode(i); // node_ID, split node or not 
-    if (is_terminal_node){
-      --num_open_nodes;
-    }
-    else{
-      size_t split_varID = split_varIDs[i];
-      double split_value = split_values[i];
-      double test_value = data -> get_test_x(0, split_varID);
-      // std::cout << "split_varID = " << split_varID << ": split_value = " << split_value << ", test_value = " << test_value << "\n";
-      if(test_value <= split_value){
-        i = child_nodeIDs[0][i];
-      }else{
-        i = child_nodeIDs[1][i];
+    this->variable_importance = variable_importance; // Variable importance for all variables, update after splitting
+    
+    // Bootstrap, dependent if weighted or not and with or without replacement
+    if (!case_weights->empty())
+    {
+      if (sample_with_replacement)
+      {
+        bootstrapWeighted();
       }
-      ++depth;
+      else
+      {
+        bootstrapWithoutReplacementWeighted();
+      }
     }
-  }
-  std::cout << "depth = " << depth << "....... done \n";
-  // Delete sampleID vector to save memory
-  sampleIDs.clear();
-  sampleIDs.shrink_to_fit();
-  cleanUpInternal();
+    else if (sample_fraction->size() > 1)
+    {
+      if (sample_with_replacement)
+      {
+        bootstrapClassWise();
+      }
+      else
+      {
+        bootstrapWithoutReplacementClassWise();
+      }
+    }
+    else if (!manual_inbag->empty())
+    {
+      setManualInbag();
+    }
+    else
+    {
+      if (sample_with_replacement)
+      {
+        bootstrap();
+      }
+      else
+      {
+        bootstrapWithoutReplacement();
+      }
+    }
+    
+    // Init start and end positions
+    start_pos[0] = 0;              // node_ID
+    end_pos[0] = sampleIDs.size(); // node_ID // All sampleIDs in the tree, will be re-ordered while splitting
+    
+    // While not all nodes terminal, split next node
+    size_t num_open_nodes = 1;
+    size_t i = 0;
+    depth = 0;
+    
+    while (num_open_nodes > 0)
+    {
+      
+      // find the node where the test data is in 
+      // Split node
+      bool is_terminal_node = splitNode(i); // node_ID, split node or not 
+      if (is_terminal_node){
+        --num_open_nodes;
+      }
+      else{
+        size_t split_varID = split_varIDs[i];
+        double split_value = split_values[i];
+        double test_value = data -> get_test_x(0, split_varID);
+        // std::cout << "split_varID = " << split_varID << ": split_value = " << split_value << ", test_value = " << test_value << "\n";
+        if(test_value <= split_value){
+          i = child_nodeIDs[0][i];
+        }else{
+          i = child_nodeIDs[1][i];
+        }
+        ++depth;
+      }
+    }
+    std::cout << "depth = " << depth << "....... done \n";
+    // Delete sampleID vector to save memory
+    sampleIDs.clear();
+    sampleIDs.shrink_to_fit();
+    cleanUpInternal();
 }
-
 
   void Tree::predict(const Data *prediction_data, bool oob_prediction)
   {

@@ -218,6 +218,7 @@ predict.spruce.forest <- function(object, data, predict.all = FALSE,
   ## Defaults for variables not needed
   mtry <- 0
   importance <- 0
+  optim.mode <- 0
   min.node.size <- 0
   min.bucket <- 0
   split.select.weights <- list(c(0, 0))
@@ -271,7 +272,7 @@ predict.spruce.forest <- function(object, data, predict.all = FALSE,
 
   ## Call spruce
   result <- spruceCpp(treetype, x, y, z, test_x, forest$independent.variable.names, mtry,
-                      num.trees, verbose, seed, num.threads, write.forest, importance,
+                      num.trees, verbose, seed, num.threads, write.forest, importance, optim.mode,
                       min.node.size, min.bucket, split.select.weights, use.split.select.weights,
                       always.split.variables, use.always.split.variables,
                       prediction.mode, forest, snp.data, replace, probability,

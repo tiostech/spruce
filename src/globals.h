@@ -57,6 +57,13 @@ enum ImportanceMode {
 };
 const uint MAX_IMP_MODE = 6;
 
+// Optim mode 
+
+enum OptimMode {
+  OPT_EXACT = 0,
+  OPT_APPROXIMATE = 1
+};
+
 // Split mode
 enum SplitRule {
   LOGRANK = 1, // actually means default 
@@ -66,9 +73,11 @@ enum SplitRule {
   EXTRATREES = 5,
   BETA = 6,
   HELLINGER = 7,
-  CRYSTAL = 8,
+  VARIANCE = 8,
   ABSOLUTE = 9, 
-  VARIANCE = 10
+  CRYSTAL_ABSOLUTE = 10,
+  CRYSTAL_ABSN4N2P1 = 11, 
+  CRYSTAL_SQUARED = 12, 
 };
 
 // Prediction type
@@ -77,10 +86,12 @@ enum PredictionType {
   TERMINALNODES = 2
 };
 
+
 // Default values
 const uint DEFAULT_NUM_TREE = 500;
 const uint DEFAULT_NUM_THREADS = 0;
 const ImportanceMode DEFAULT_IMPORTANCE_MODE = IMP_NONE;
+const OptimMode DEFAULT_OPTIM_MODE = OPT_EXACT;
 
 const uint DEFAULT_MIN_NODE_SIZE_CLASSIFICATION = 1;
 const uint DEFAULT_MIN_NODE_SIZE_REGRESSION = 5;

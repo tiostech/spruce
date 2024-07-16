@@ -11,6 +11,7 @@ spruce(
   num.trees = 500,
   mtry = NULL,
   importance = "none",
+  optim = "approximate",
   write.forest = TRUE,
   probability = FALSE,
   min.node.size = NULL,

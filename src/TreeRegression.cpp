@@ -31,10 +31,12 @@
 namespace spruce
 {
 
-  TreeRegression::TreeRegression(std::vector<std::vector<size_t>> &child_nodeIDs, std::vector<size_t> &split_varIDs,
-                                 std::vector<double> &split_values) : Tree(child_nodeIDs, split_varIDs, split_values), counter(0), sums(0)
-  {
-  }
+  TreeRegression::TreeRegression(std::vector<std::vector<size_t>> &child_nodeIDs,
+                                 std::vector<size_t> &split_varIDs, 
+                                 std::vector<double> &split_values) : Tree(child_nodeIDs, split_varIDs, split_values), 
+                                 counter(0),
+                                 sums(0)
+  {}
 
   void TreeRegression::allocateMemory()
   {
@@ -54,88 +56,168 @@ namespace spruce
     }
   }
 
-  // Crystal
-  double TreeRegression::crystal_cost_core(double z, double y, double estimate)
-  {
-    double cost = 0;
-    if (estimate > y)
-    {
-      cost = estimate - y;
-    }
-    else if (estimate >= z)
-    {
-      cost = 2 * (y - estimate);
-    }
-    else
-    {
-      cost = 2 * (y - z) + 4 * (z - estimate);
-    }
-    return cost;
-  }
-
-  double TreeRegression::crystal_cost(double z, double y, double estimate)
-  {
-    double cost = 0;
-    if (y >= z)
-    {
-      cost = crystal_cost_core(z, y, estimate);
-    }else
-    {
-      cost = crystal_cost_core(y, z, (z + y) - estimate);
-    }
-    return cost;
-  }
-
-  double TreeRegression::crystal_cost_gradient_core(double z, double y, double estimate)
+  // ABSN4N2P1
+  
+  double TreeRegression::crystal_ABSN4N2P1_cost_gradient_core(double z, double y, double estimate)
   {
     double gradient = 0;
-    if (estimate > y)
-    {
+    if (estimate >= y){
       gradient = 1;
     }
-    else if (estimate >= z)
-    {
+    else if (estimate >= z){
       gradient = -2;
     }
-    else
-    {
+    else{
       gradient = -4;
     }
     return gradient;
 }
 
-  double TreeRegression::crystal_cost_gradient(double z, double y, double estimate)
+  double TreeRegression::crystal_ABSN4N2P1_cost_gradient(double z, double y, double estimate)
   {
     double gradient = 0;
     if (y >= z)
     {
-      gradient = crystal_cost_gradient_core(z, y, estimate);
+      gradient = crystal_ABSN4N2P1_cost_gradient_core(z, y, estimate);
     }else
     {
-      gradient = crystal_cost_gradient_core(y, z, (z + y) - estimate);
+      gradient = crystal_ABSN4N2P1_cost_gradient_core(y, z, (z + y) - estimate);
     }
     return gradient;
 }
 
-  double TreeRegression::crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+  double TreeRegression::crystal_ABSN4N2P1_cost_core(double z, double y, double estimate)
   {
     double cost = 0;
-    for (size_t i = 0; i < y_values.size(); i++)
+    if (estimate >= y){
+      cost = estimate - y;
+    }
+    else if (estimate >= z){
+      cost = 2 * (y - estimate);
+    }
+    else{
+      cost = 2 * (y - z) + 4 * (z - estimate);
+    }
+    return cost;
+  }
+  
+  double TreeRegression::crystal_ABSN4N2P1_cost(double z, double y, double estimate)
+  {
+    double cost = 0;
+    if (y >= z)
     {
-      if (y_values[i] >= z_values[i])
-      {
-        cost += crystal_cost_core(z_values[i], y_values[i], estimate);
-      }
-      else
-      {
-        cost += crystal_cost_core(y_values[i], z_values[i], (z_values[i] + y_values[i]) - estimate);
-      }
+      cost = crystal_ABSN4N2P1_cost_core(z, y, estimate);
+    }else
+    {
+      cost = crystal_ABSN4N2P1_cost_core(y, z, (z + y) - estimate);
     }
     return cost;
   }
 
-  std::vector<double> TreeRegression::crystal_cost_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate){
+  double TreeRegression::crystal_ABSN4N2P1_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+  {
+    double cost = 0;
+    for (size_t i = 0; i < y_values.size(); i++)
+    {
+      cost += crystal_ABSN4N2P1_cost(z_values[i], y_values[i], estimate);
+    }
+    return cost;
+  }
+
+  // squared loss 
+  
+  double TreeRegression::crystal_squared_cost_gradient(double z, double y, double estimate)
+  {
+    double gradient = 0;
+    gradient = 2 * (y - estimate);
+    return gradient;
+}
+  
+  double TreeRegression::crystal_squared_cost(double z, double y, double estimate)
+  {
+    double cost = 0;
+    cost = (y - estimate) * (y - estimate);
+    return cost;
+  }
+
+  double TreeRegression::crystal_squared_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+  {
+    double cost = 0;
+    for (size_t i = 0; i < y_values.size(); ++i)
+    {
+      cost += (y_values[i] - estimate) * (y_values[i] - estimate);
+    }
+    return cost;
+}
+
+
+  // absolute loss 
+  
+  double TreeRegression::crystal_absolute_cost_gradient(double z, double y, double estimate)
+  {
+    if(estimate >= y){
+      return 1.0;
+    }else{
+      return -1.0;
+    }
+}
+  
+  double TreeRegression::crystal_absolute_cost(double z, double y, double estimate)
+  {
+    double cost = 0;
+    cost = std::abs(y - estimate);
+    return cost;
+  }
+
+  double TreeRegression::crystal_absolute_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+  {
+    double cost = 0;
+    for (size_t i = 0; i < y_values.size(); ++i)
+    {
+      cost += std::abs(y_values[i] - estimate);
+    }
+    return cost;
+}
+
+// where magic happens
+
+  double TreeRegression::crystal_cost_gradient(double z, double y, double estimate)
+  {
+    if(splitrule == CRYSTAL_ABSOLUTE){
+      return crystal_absolute_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_ABSN4N2P1){
+      return crystal_ABSN4N2P1_cost_gradient(z, y, estimate);
+    }else{
+      return crystal_squared_cost_gradient(z, y, estimate);
+    }
+  }
+
+  double TreeRegression::crystal_cost(double z, double y, double estimate)
+  {
+    if(splitrule == CRYSTAL_ABSOLUTE){
+      return crystal_absolute_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_ABSN4N2P1){
+      return crystal_ABSN4N2P1_cost(z, y, estimate);
+    }else{
+      return crystal_squared_cost(z, y, estimate);
+    }
+  }
+
+  double TreeRegression::crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+  {
+    if(splitrule == CRYSTAL_ABSOLUTE){
+      return crystal_absolute_cost(z_values, y_values, estimate);
+    }else if(splitrule == CRYSTAL_ABSN4N2P1){
+      return crystal_ABSN4N2P1_cost(z_values, y_values, estimate);
+    }else{
+      return crystal_squared_cost(z_values, y_values, estimate);
+    }
+  }
+
+  std::vector<double> TreeRegression::crystal_cost_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+  {
     std::vector<double> g_values(y_values.size());
+    
     for(size_t i = 0; i < y_values.size(); i++){
       g_values[i] = crystal_cost_gradient(z_values[i], y_values[i], estimate);
     }
@@ -180,7 +262,7 @@ namespace spruce
         right = c2; 
       }
     }
-    if(std::abs(left-right) <= delta){
+    if(std::abs(left - right) <= delta){
       break; // Exit loop if the difference is less than delta
     }
     ++i;
@@ -190,7 +272,8 @@ namespace spruce
   return best_estimate; // Return the best estimate of the minimum
 }
 
-  double TreeRegression::crystal_cost_fit(size_t nodeID){
+  double TreeRegression::crystal_cost_fit(size_t nodeID)
+  {
     size_t num_samples_in_node = end_pos[nodeID] - start_pos[nodeID];
     // Precompute y and z values
     std::vector<double> y_values(num_samples_in_node);
@@ -203,46 +286,8 @@ namespace spruce
       z_values[i - start_pos[nodeID]] = data->get_z(sampleID, 0);
     }
     
-    // Terary_search to find global minimum
-    auto minElement = std::min_element(y_values.begin(), y_values.end());
-    double left = *minElement;
-    auto maxElement = std::max_element(y_values.begin(), y_values.end());
-    double right = *maxElement;
-    
-    double c1, c2, sum_cost_c1, sum_cost_c2; 
-    double delta = 0.1; 
-    size_t i = 1;
-    while(true){
-      c1 = left + (right - left) / 3.0; 
-      c2 = left + 2.0 * (right - left) / 3.0; 
-      
-      sum_cost_c1 = 0.0;
-      sum_cost_c2 = 0.0;
-      
-      for (size_t pos = 0; pos < num_samples_in_node; ++pos)
-      {
-        sum_cost_c1 += crystal_cost(z_values[pos], y_values[pos], c1);
-        sum_cost_c2 += crystal_cost(z_values[pos], y_values[pos], c2);
-      }
-      if(sum_cost_c1 > sum_cost_c2){
-        left = c1;
-      }else if(sum_cost_c1 < sum_cost_c2){
-        right = c2;
-      }else{
-        if(c1 == c2){
-          return c1; // Return if c1 and c2 are the same
-        }else{
-          left = c1;
-          right = c2; 
-        }
-      }
-      if(std::abs(left - right) <= delta){
-        break; // Exit loop if the difference is less than delta
-      }
-      ++i;
-    }
-    double best_estimate = (left + right) / 2.0; 
-    return best_estimate; // Return the best estimate of the minimum
+    double best_estimate = crystal_cost_fit(z_values, y_values);
+    return best_estimate;
 }
 
   bool TreeRegression::findBestSplitCrystalCost(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
@@ -314,10 +359,6 @@ namespace spruce
     std::vector<double> possible_split_values;
     data->getAllValues(possible_split_values, sampleIDs, varID, start_pos[nodeID], end_pos[nodeID]);
     
-    // for (double id : possible_split_values) {
-    //   std::cout << id << " ";
-    // }
-    
     // Try next variable if all equal for this
     if (possible_split_values.size() < 2)
     {
@@ -339,8 +380,11 @@ namespace spruce
       std::fill_n(sums.begin(), num_splits, 0);
       std::fill_n(counter.begin(), num_splits, 0);
 
-      // findBestSplitValueCrystalCost(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
-      findBestSplitValueCrystalCostApprox(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      if(optim_mode == OPT_EXACT){
+        findBestSplitValueCrystalCost(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      }else{
+        findBestSplitValueCrystalCostApprox(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      }
     }
   }
 
@@ -367,9 +411,6 @@ namespace spruce
         }
       }
     }
-    // for (size_t i = 0; i < num_splits; ++i) {
-    //   std::cout << n_right[i] << " ";
-    // }
     
     std::vector<double> parent_y, parent_z;
     for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
@@ -421,8 +462,7 @@ namespace spruce
       double right_cost = crystal_cost(right_z, right_y, crystal_cost_fit(right_z, right_y));
      
       double decrease = parent_cost - left_cost - right_cost;
-      // std::cout << "parent_cost = " << parent_cost << ", left_cost = " << left_cost << ", right_cost = " << right_cost << ", decrease = " << decrease << "\n";
-
+ 
       // Stop if no result
       if (std::isnan(decrease))
       {
@@ -430,7 +470,7 @@ namespace spruce
       }
 
       // Regularization (negative values)
-      regularizeNegative(decrease, varID);
+      regularizeNegative(decrease, varID); // not used
 
       // If better than before, use this 
       if (decrease > best_decrease)
@@ -455,11 +495,10 @@ namespace spruce
 
   void TreeRegression::findBestSplitValueCrystalCostApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right){
   
-  // get estimate of parent node 
-  // calculate gradient of loss 
-  // CART split 
+  // 1. get estimate of parent node 
+  // 2. calculate gradient of loss 
+  // 3. CART split 
   
-  // std::cout << "use local boosting to find approximated estimate";
   std::vector<double> parent_y, parent_z;
   for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
   {
@@ -481,11 +520,14 @@ namespace spruce
     size_t sampleID = sampleIDs[pos];
     size_t idx = std::lower_bound(possible_split_values.begin(), possible_split_values.end(),
                                   data->get_x(sampleID, varID)) - possible_split_values.begin();
-    
-    sums[idx] += parent_g[pos - 1 - start_pos[nodeID]];
+    // index of first element that no less than x 
+    // 1, 2, 5, 7, 9; x = 4 
+    // idx = 2
+    sum_node += parent_g[pos - start_pos[nodeID]];
+    sums[idx] += parent_g[pos - start_pos[nodeID]];
     ++counter[idx];
   }
-  
+  // (](](]....(] 
   size_t n_left = 0;
   double sum_left = 0;
   
@@ -687,10 +729,13 @@ namespace spruce
     {
       std::fill_n(sums.begin(), num_splits, 0);
       std::fill_n(counter.begin(), num_splits, 0);
-      
-      // findBestSplitValueAbsoluteCost(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
-      // use local gradient approximation
-      findBestSplitValueAbsoluteCostApprox(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      if(optim_mode == OPT_EXACT){
+        findBestSplitValueAbsoluteCost(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      }
+      else{
+        // use local gradient approximation
+        findBestSplitValueAbsoluteCostApprox(nodeID, varID, num_samples_node, best_value, best_varID, best_decrease, possible_split_values, sums, counter);
+      }
       
     }
 }
@@ -786,7 +831,7 @@ namespace spruce
         }
         
         // Regularization (negative values)
-        regularizeNegative(decrease, varID);
+        regularizeNegative(decrease, varID); // not used
         
         // If better than before, use this 
         if (decrease > best_decrease)
@@ -802,11 +847,6 @@ namespace spruce
           }
         }
       }
-    // std::cout << "varID = " << varID << "\n";
-    // std::cout << "num_samples_node = " << num_samples_node << "\n";
-    // std::cout << "best_varID = " << best_varID << "\n";
-    // std::cout << "best_value = " << best_value << "\n";
-    // std::cout << "best_decrease = " << best_decrease << "\n";
 }
 
   void TreeRegression::findBestSplitValueAbsoluteCostApprox(size_t nodeID, size_t varID, size_t num_samples_node, double &best_value, size_t &best_varID, double &best_decrease, std::vector<double> possible_split_values, std::vector<double> &sums_right, std::vector<size_t> &n_right){
@@ -836,10 +876,10 @@ namespace spruce
         size_t sampleID = sampleIDs[pos];
         size_t idx = std::lower_bound(possible_split_values.begin(), possible_split_values.end(),
                                       data->get_x(sampleID, varID)) - possible_split_values.begin();
-  
-        sums[idx] += parent_g[pos - 1 - start_pos[nodeID]];
+        sum_node += parent_g[pos - start_pos[nodeID]];
+        sums[idx] += parent_g[pos - start_pos[nodeID]];
         ++counter[idx];
-      }
+        }
       
       size_t n_left = 0;
       double sum_left = 0;
@@ -903,8 +943,6 @@ namespace spruce
       num_samples_nodes[nodeID] = num_samples_node;
       if(splitrule == ABSOLUTE){
         node_predictions[nodeID] = absolute_cost_fit(nodeID);
-      }else if(splitrule == CRYSTAL){
-        node_predictions[nodeID] = crystal_cost_fit(nodeID);
       }else{
         node_predictions[nodeID] = crystal_cost_fit(nodeID);
       }
@@ -915,8 +953,6 @@ namespace spruce
     {
       if(splitrule == ABSOLUTE){
         split_values[nodeID] = absolute_cost_fit(nodeID);
-      } else if(splitrule == CRYSTAL){
-        split_values[nodeID] = crystal_cost_fit(nodeID);
       } else{
         split_values[nodeID] = crystal_cost_fit(nodeID);
       }
@@ -956,9 +992,6 @@ namespace spruce
     if(splitrule == ABSOLUTE){
       // std::cout << "split rule = ABSOLUTE" << "\n";
       stop = findBestSplitAbsoluteCost(nodeID, possible_split_varIDs);
-    }else if(splitrule == CRYSTAL){
-     //  std::cout << "split rule = CRYSTAL" << "\n";
-      stop = findBestSplitCrystalCost(nodeID, possible_split_varIDs);
     }else {
       stop = findBestSplitCrystalCost(nodeID, possible_split_varIDs);
     }
@@ -970,10 +1003,8 @@ namespace spruce
     {
       if(splitrule == ABSOLUTE){
         split_values[nodeID] = absolute_cost_fit(nodeID); // reset fitted value 
-      }else if(splitrule == CRYSTAL){
-        split_values[nodeID] = crystal_cost_fit(nodeID);
-      } else{
-        split_values[nodeID] = crystal_cost_fit(nodeID);
+      }else{
+        split_values[nodeID] = crystal_cost_fit(nodeID); // general
       }
       return true;
     }
