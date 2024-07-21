@@ -114,22 +114,13 @@ namespace spruce
     return cost;
   }
 
-  double TreeRegression::crystal_ABSN4N2P1_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
-  {
-    double cost = 0;
-    for (size_t i = 0; i < y_values.size(); i++)
-    {
-      cost += crystal_ABSN4N2P1_cost(z_values[i], y_values[i], estimate);
-    }
-    return cost;
-  }
 
   // squared loss 
   
   double TreeRegression::crystal_squared_cost_gradient(double z, double y, double estimate)
   {
     double gradient = 0;
-    gradient = 2 * (y - estimate);
+    gradient = -2 * (y - estimate);
     return gradient;
 }
   
@@ -139,17 +130,6 @@ namespace spruce
     cost = (y - estimate) * (y - estimate);
     return cost;
   }
-
-  double TreeRegression::crystal_squared_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
-  {
-    double cost = 0;
-    for (size_t i = 0; i < y_values.size(); ++i)
-    {
-      cost += (y_values[i] - estimate) * (y_values[i] - estimate);
-    }
-    return cost;
-}
-
 
   // absolute loss 
   
@@ -169,15 +149,260 @@ namespace spruce
     return cost;
   }
 
-  double TreeRegression::crystal_absolute_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
+// rtskewed_square
+  double TreeRegression::crystal_rtskewed_squared_cost_gradient(double z, double y, double estimate)
   {
-    double cost = 0;
-    for (size_t i = 0; i < y_values.size(); ++i)
-    {
-      cost += std::abs(y_values[i] - estimate);
+    if(z < y){
+      if(estimate >= y){
+        return -2 * (y - estimate);
+      }else{
+        return -4 * (y - estimate);
+      }
+    }else{
+      if(estimate >= y){
+        return -4 * (y - estimate);
+      }else{
+        return -2 * (y - estimate);
+      }
+    }
+  }
+  
+  double TreeRegression::crystal_rtskewed_squared_cost(double z, double y, double estimate)
+  {
+    double cost; 
+    if(z < y){
+      if(estimate >= y){
+        return (y - estimate) * (y - estimate);
+      }else{
+        return 2 * (y - estimate) * (y - estimate);
+      }
+    }else{
+      if(estimate >= y){
+        return 2 * (y - estimate) * (y - estimate);
+      }else{
+        return (y - estimate) * (y - estimate);
+      }
     }
     return cost;
+  }
+  
+  // daskewed_square
+  double TreeRegression::crystal_daskewed_squared_cost_gradient(double z, double y, double estimate)
+  {
+    if(z < y){
+      if(estimate >= z){
+        return -2 * (z - estimate);
+      }else{
+        return -4 * (z - estimate);
+      }
+    }else{
+      if(estimate >= z){
+        return -4 * (z - estimate);
+      }else{
+        return -2 * (z - estimate);
+      }
+    }
+  }
+  
+  double TreeRegression::crystal_daskewed_squared_cost(double z, double y, double estimate){
+    double cost; 
+    if(z < y){
+      if(estimate >= z){
+        return (z - estimate) * (z - estimate);
+      }else{
+        return 2 * (z - estimate) * (z - estimate);
+      }
+    }else{
+      if(estimate >= z){
+        return 2 * (z - estimate) * (z - estimate);
+      }else{
+        return (z - estimate) * (z - estimate);
+      }
+    }
+    return cost;
+  }
+
+
+  // frac2.2 loss 
+  
+  double TreeRegression::crystal_frac2p2_cost_gradient(double z, double y, double estimate)
+  {
+    double gradient; 
+    if(estimate > y){
+      gradient = 2.2 * std::pow(std::abs(y - estimate), 1.2);
+    }else{
+      gradient = -2.2 * std::pow(std::abs(y - estimate), 1.2);
+    }
+    return gradient;
+  }
+  
+  double TreeRegression::crystal_frac2p2_cost(double z, double y, double estimate){
+    double cost; 
+    cost = std::pow(std::abs(y - estimate), 2.2);
+    return cost;
+  }
+
+
+  // sigmoid 
+  
+  double TreeRegression::crystal_sigmoid_cost(double z, double y, double estimate)
+  {
+    double cost = 0;
+    double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+    
+    if (z < y)
+    {
+      cost = (y - z) * ( 1 - sigma_da);
+    }else{
+      cost = (z - y) * sigma_da;
+    }
+    return cost;
+  }
+  
+  
+  double TreeRegression::crystal_sigmoid_cost_gradient(double z, double y, double estimate)
+  {
+    double gradient = 0;
+    double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+    if (z < y)
+    {
+      gradient = (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+    }else
+    {
+      gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+    }
+    return gradient;
+  }
+  
+  // sigmoid squared 
+  
+  double TreeRegression::crystal_sigmoid_squared_cost(double z, double y, double estimate)
+  {
+    double cost = 0;
+    double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+    if (z < y)
+    {
+      cost =  (y - z) * (y - z) *  ( 1 - sigma_da);
+    }else
+    {
+      cost = (z - y) * (z - y) * sigma_da;
+    }
+    return cost;
+  }
+  
+  double TreeRegression::crystal_sigmoid_squared_cost_gradient(double z, double y, double estimate)
+  {
+    double gradient = 0;
+    double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+    if (z < y)
+    {
+      gradient = (y - z) *  (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+    }else
+    {
+      gradient = (z - y) * (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+    }
+    return gradient;
+  }
+
+
+
+  // sigmoid squared + abs
+  
+  double TreeRegression::crystal_sigmoid_squared_abs_cost(double z, double y, double estimate)
+  {
+    double cost = 0;
+    double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+    
+    if (z < y)
+    {
+      cost = (y - z) * (y - z) *  ( 1 - sigma_da) + std::abs(estimate - y);
+    }else
+    {
+      cost = (z - y) * (z - y) * sigma_da + std::abs(estimate - y);
+    }
+    return cost;
+  }
+  
+  double TreeRegression::crystal_sigmoid_squared_abs_cost_gradient(double z, double y, double estimate)
+  {
+    double gradient = 0;
+    double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+    if (y >= z)
+    {
+      gradient = (y - z) *  (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+    }else
+    {
+      gradient = (z - y) * (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+    }
+    
+    if(estimate > y){
+      gradient = gradient + 1;
+    }else{
+      gradient = gradient - 1;
+    }
+    return gradient;
+  }
+
+
+// sigmoid decay
+
+double TreeRegression::crystal_sigmoid_decay_cost(double z, double y, double estimate)
+{
+  double cost = 0;
+  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  if (y >= z)
+  {
+    cost =  (y - z) *  ( 1 - sigma_da) + 10 * (sigma_rt - 0.5);
+  }else
+  {
+    cost = (z - y) * sigma_da + 10 * (sigma_rt - 0.5); 
+  }
+  return cost;
 }
+
+double TreeRegression::crystal_sigmoid_decay_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = 0;
+  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+
+  if (y >= z)
+  {
+    gradient = (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  }else
+  {
+    gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  }
+  
+  if(estimate >= y){
+    gradient = gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0/ 25 * 1.0;
+  }else{
+    gradient = gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0/ 25 * (-1.0);
+  }
+  return gradient;
+}
+
+
+// sigmoid decay squared
+
+
+double TreeRegression::crystal_sigmoid_decay_squared_cost(double z, double y, double estimate)
+{
+  double cost = crystal_sigmoid_decay_cost(z, y, estimate);
+  cost = cost * cost; 
+  return cost;
+}
+
+double TreeRegression::crystal_sigmoid_decay_squared_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = crystal_sigmoid_decay_cost_gradient(z, y , estimate);
+  double cost = crystal_sigmoid_decay_cost(z, y, estimate);
+  gradient = 2 * cost * gradient; 
+  
+  return gradient;
+}
+
 
 // where magic happens
 
@@ -187,6 +412,22 @@ namespace spruce
       return crystal_absolute_cost_gradient(z, y, estimate);
     }else if(splitrule == CRYSTAL_ABSN4N2P1){
       return crystal_ABSN4N2P1_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_RTSKEWED_SQUARED){
+      return crystal_rtskewed_squared_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_DASKEWED_SQAURED){
+      return crystal_daskewed_squared_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_FRAC2P2){
+      return crystal_frac2p2_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID){
+      return crystal_sigmoid_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_SQUARED){
+      return crystal_sigmoid_squared_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_SQUARED_ABS){
+      return crystal_sigmoid_squared_abs_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_DECAY){
+      return crystal_sigmoid_decay_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_DECAY_SQUARED){
+      return crystal_sigmoid_decay_squared_cost_gradient(z, y, estimate);
     }else{
       return crystal_squared_cost_gradient(z, y, estimate);
     }
@@ -198,6 +439,22 @@ namespace spruce
       return crystal_absolute_cost(z, y, estimate);
     }else if(splitrule == CRYSTAL_ABSN4N2P1){
       return crystal_ABSN4N2P1_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_RTSKEWED_SQUARED){
+      return crystal_rtskewed_squared_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_DASKEWED_SQAURED){
+      return crystal_daskewed_squared_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_FRAC2P2){
+      return crystal_frac2p2_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID){
+      return crystal_sigmoid_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_SQUARED){
+      return crystal_sigmoid_squared_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_SQUARED_ABS){
+      return crystal_sigmoid_squared_abs_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_DECAY){
+      return crystal_sigmoid_decay_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SIGMOID_DECAY_SQUARED){
+      return crystal_sigmoid_decay_squared_cost(z, y, estimate);
     }else{
       return crystal_squared_cost(z, y, estimate);
     }
@@ -205,13 +462,12 @@ namespace spruce
 
   double TreeRegression::crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate)
   {
-    if(splitrule == CRYSTAL_ABSOLUTE){
-      return crystal_absolute_cost(z_values, y_values, estimate);
-    }else if(splitrule == CRYSTAL_ABSN4N2P1){
-      return crystal_ABSN4N2P1_cost(z_values, y_values, estimate);
-    }else{
-      return crystal_squared_cost(z_values, y_values, estimate);
+    double cost = 0;
+    for (size_t i = 0; i < y_values.size(); ++i)
+    {
+      cost += crystal_cost(z_values[i], y_values[i], estimate);
     }
+    return cost;
   }
 
   std::vector<double> TreeRegression::crystal_cost_relabel(std::vector<double> z_values, std::vector<double> y_values, double estimate)

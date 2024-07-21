@@ -272,7 +272,7 @@ namespace spruce
         ++depth;
       }
     }
-    std::cout << "depth = " << depth << "....... done \n";
+    // std::cout << "depth = " << depth << "....... done \n";
     // Delete sampleID vector to save memory
     sampleIDs.clear();
     sampleIDs.shrink_to_fit();

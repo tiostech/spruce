@@ -69,6 +69,34 @@ namespace spruce
     double crystal_ABSN4N2P1_cost_gradient(double z, double y, double estimate);
     // 
     
+    double crystal_rtskewed_squared_cost_gradient(double z, double y, double estimate);
+    double crystal_rtskewed_squared_cost(double z, double y, double estimate);
+    
+    double crystal_daskewed_squared_cost_gradient(double z, double y, double estimate);
+    double crystal_daskewed_squared_cost(double z, double y, double estimate);
+    
+    double crystal_frac2p2_cost_gradient(double z, double y, double estimate);
+    double crystal_frac2p2_cost(double z, double y, double estimate);
+    // sigmoid....
+    double crystal_sigmoid_cost_gradient(double z, double y, double estimate);
+    double crystal_sigmoid_cost(double z, double y, double estimate);
+    
+    double crystal_sigmoid_squared_cost_gradient(double z, double y, double estimate);
+    double crystal_sigmoid_squared_cost(double z, double y, double estimate);
+    
+    double crystal_sigmoid_squared_abs_cost_gradient(double z, double y, double estimate);
+    double crystal_sigmoid_squared_abs_cost(double z, double y, double estimate);
+    
+    // sigmoid_decay
+    double crystal_sigmoid_decay_cost_gradient(double z, double y, double estimate);
+    double crystal_sigmoid_decay_cost(double z, double y, double estimate);
+    
+    double crystal_sigmoid_decay_squared_cost_gradient(double z, double y, double estimate);
+    double crystal_sigmoid_decay_squared_cost(double z, double y, double estimate);
+    
+    
+    
+
     double crystal_cost(double z, double y, double estimate);
     double crystal_cost(std::vector<double> z_values, std::vector<double> y_values, double estimate);
     double crystal_cost_gradient(double z, double y, double estimate);

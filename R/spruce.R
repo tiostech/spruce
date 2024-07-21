@@ -820,6 +820,62 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }else{
       stop("Error: crystal_squared splitrule applicable to regression data only.")
     }
+  }else if(splitrule == "crystal_rtskewed_squared"){
+    if(treetype == 3){
+      splitrule.num <- 13
+      print("splitrule = 13")
+    }else{
+      stop("Error: crystal_rtskewed_squared splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_daskewed_squared"){
+    if(treetype == 3){
+      splitrule.num <- 14
+      print("splitrule = 14")
+    }else{
+      stop("Error: crystal_daskewed_squared splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_frac2p2"){
+    if(treetype == 3){
+      splitrule.num <- 15
+      print("splitrule = 15")
+    }else{
+      stop("Error: crystal_frac2p2 splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_sigmoid"){
+    if(treetype == 3){
+      splitrule.num <- 16
+      print("splitrule = 16")
+    }else{
+      stop("Error: crystal_sigmoid splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_sigmoid_squared"){
+    if(treetype == 3){
+      splitrule.num <- 17
+      print("splitrule = 17")
+    }else{
+      stop("Error: crystal_sigmoid_squared splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_sigmoid_squared_abs"){
+    if(treetype == 3){
+      splitrule.num <- 18
+      print("splitrule = 18")
+    }else{
+      stop("Error: crystal_sigmoid_squared_abs splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_sigmoid_decay"){
+    if(treetype == 3){
+      splitrule.num <- 19
+      print("splitrule = 19")
+    }else{
+      stop("Error: crystal_sigmoid_decay splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_sigmoid_decay_squared"){
+    if(treetype == 3){
+      splitrule.num <- 20
+      print("splitrule = 20")
+    }else{
+      stop("Error: crystal_sigmoid_decay_squared splitrule applicable to regression data only.")
+    }
   }else {
     stop("Error: Unknown splitrule.")
   }
