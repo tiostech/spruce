@@ -876,6 +876,34 @@ spruce <- function(formula = NULL, data = NULL, test_data = NULL, num.trees = 50
     }else{
       stop("Error: crystal_sigmoid_decay_squared splitrule applicable to regression data only.")
     }
+  }else if(splitrule == "crystal_oppabs_0p5"){
+    if(treetype == 3){
+      splitrule.num <- 21
+      print("splitrule = 21")
+    }else{
+      stop("Error: crystal_oppabs_0p5 splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_oppabs_1p0"){
+    if(treetype == 3){
+      splitrule.num <- 22
+      print("splitrule = 22")
+    }else{
+      stop("Error: crystal_oppabs_1p0 splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_oppabs_2p0"){
+    if(treetype == 3){
+      splitrule.num <- 23
+      print("splitrule = 23")
+    }else{
+      stop("Error: crystal_oppabs_2p0 splitrule applicable to regression data only.")
+    }
+  }else if(splitrule == "crystal_oppabs_3p0"){
+    if(treetype == 3){
+      splitrule.num <- 24
+      print("splitrule = 24")
+    }else{
+      stop("Error: crystal_oppabs_3p0 splitrule applicable to regression data only.")
+    }
   }else {
     stop("Error: Unknown splitrule.")
   }

@@ -94,6 +94,20 @@ namespace spruce
     double crystal_sigmoid_decay_squared_cost_gradient(double z, double y, double estimate);
     double crystal_sigmoid_decay_squared_cost(double z, double y, double estimate);
     
+    // opp +abs 
+    
+    double crystal_oppabs_0p5_cost(double z, double y, double estimate);
+    double crystal_oppabs_0p5_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_oppabs_1p0_cost(double z, double y, double estimate);
+    double crystal_oppabs_1p0_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_oppabs_2p0_cost(double z, double y, double estimate);
+    double crystal_oppabs_2p0_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_oppabs_3p0_cost(double z, double y, double estimate);
+    double crystal_oppabs_3p0_cost_gradient(double z, double y, double estimate);
+    
     
     
 
