@@ -411,17 +411,19 @@ double TreeRegression::crystal_sigmoid_decay_squared_cost_gradient(double z, dou
 double TreeRegression::crystal_oppabs_0p5_cost(double z, double y, double estimate)
 {
   double cost = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
-  double opp_cost = 0;
-  if (y >= z)
-  {
-    opp_cost =  (y - z) *  ( 1 - sigma_da) + 10 * (sigma_rt - 0.5);
-  }else{
-    opp_cost = (z - y) * sigma_da + 10 * (sigma_rt - 0.5); 
-  }
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
   
-  cost = 0.5 * opp_cost + abs(estimate - y);
+  double opp_ene_cost = 0;
+  if (y >= z){
+    opp_ene_cost =  (y - z) * ( 1 - sigma_ene); 
+  }else{
+    opp_ene_cost = (z - y) * sigma_ene;
+  }
+
+  double opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 0.5 * (opp_ene_cost + opp_con_cost) + abs(estimate - y);
     
   return cost;
 }
@@ -429,29 +431,22 @@ double TreeRegression::crystal_oppabs_0p5_cost(double z, double y, double estima
 double TreeRegression::crystal_oppabs_0p5_cost_gradient(double z, double y, double estimate)
 {
   double gradient = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
   
-  // if (y >= z)
-  // {
-  //   opp_gradient = (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
-  // }else
-  // {
-  //   opp_gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
-  // }
-  
-  double opp_gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double opp_con_gradient = 0;
   double abs_gradient = 0;
   
   if(estimate >= y){
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0 / 25 * 1.0;
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
     abs_gradient = 1.0;
   }else{
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0 / 25 * (-1.0);
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
     abs_gradient = -1.0;
   }
   
-  gradient = 0.5 * opp_gradient + abs_gradient;
+  gradient = 0.5 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
   
   return gradient;
 }
@@ -463,38 +458,42 @@ double TreeRegression::crystal_oppabs_0p5_cost_gradient(double z, double y, doub
 double TreeRegression::crystal_oppabs_1p0_cost(double z, double y, double estimate)
 {
   double cost = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
-  double opp_cost  = 0;
-  if (y >= z)
-  {
-     opp_cost =  (y - z) *  ( 1 - sigma_da) + 10 * (sigma_rt - 0.5);
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  
+  double opp_ene_cost = 0;
+  if (y >= z){
+    opp_ene_cost =  (y - z) * ( 1 - sigma_ene); 
   }else{
-     opp_cost = (z - y) * sigma_da + 10 * (sigma_rt - 0.5); 
+    opp_ene_cost = (z - y) * sigma_ene;
   }
   
-  cost = 1.0 * opp_cost + abs(estimate - y);
-    
-    return cost;
+  double opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 1.0 * (opp_ene_cost + opp_con_cost) + abs(estimate - y);
+  
+  return cost;
 }
 
 double TreeRegression::crystal_oppabs_1p0_cost_gradient(double z, double y, double estimate)
 {
   double gradient = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
   
-  double opp_gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
-  double abs_gradient = 0; 
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double opp_con_gradient = 0;
+  double abs_gradient = 0;
+  
   if(estimate >= y){
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0 / 25 * 1.0;
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
     abs_gradient = 1.0;
   }else{
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0 / 25 * (-1.0);
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
     abs_gradient = -1.0;
   }
   
-  gradient = 1.0 * opp_gradient + abs_gradient;
+  gradient = 1.0 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
   
   return gradient;
 }
@@ -505,41 +504,260 @@ double TreeRegression::crystal_oppabs_1p0_cost_gradient(double z, double y, doub
 double TreeRegression::crystal_oppabs_2p0_cost(double z, double y, double estimate)
 {
   double cost = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
   
-  double opp_cost = 0;
-  if (y >= z)
-  {
-     opp_cost =  (y - z) *  ( 1 - sigma_da) + 10 * (sigma_rt - 0.5);
+  double opp_ene_cost = 0;
+  if (y >= z){
+    opp_ene_cost =  (y - z) *  ( 1 - sigma_ene); 
   }else{
-     opp_cost = (z - y) * sigma_da + 10 * (sigma_rt - 0.5); 
+    opp_ene_cost = (z - y) * sigma_ene;
   }
   
-  cost = 2.0 *  opp_cost + abs(estimate - y);
-    
+  double opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 2.0 * (opp_ene_cost + opp_con_cost) + abs(estimate - y);
+  
   return cost;
 }
 
 double TreeRegression::crystal_oppabs_2p0_cost_gradient(double z, double y, double estimate)
 {
   double gradient = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
   
-  double opp_gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double opp_con_gradient = 0;
   double abs_gradient = 0;
   
   if(estimate >= y){
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0 / 25 * 1.0;
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
     abs_gradient = 1.0;
   }else{
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0 / 25 * (-1.0);
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
+    abs_gradient = -1.0;
+  }
+  
+  gradient = 2.0 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
+  
+  return gradient;
+}
+
+// Opp cost: abs cost = 3 : 1 
+// 
+double TreeRegression::crystal_oppabs_3p0_cost(double z, double y, double estimate)
+{
+  double cost = 0;
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  
+  double opp_ene_cost = 0;
+  if (y >= z){
+    opp_ene_cost =  (y - z) * ( 1 - sigma_ene); 
+  }else{
+    opp_ene_cost = (z - y) * sigma_ene;
+  }
+  
+  double opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 3.0 * (opp_ene_cost + opp_con_cost) + abs(estimate - y);
+  
+  return cost;
+}
+
+double TreeRegression::crystal_oppabs_3p0_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = 0;
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double opp_con_gradient = 0;
+  double abs_gradient = 0;
+  
+  if(estimate >= y){
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
+    abs_gradient = 1.0;
+  }else{
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
+    abs_gradient = -1.0;
+  }
+  
+  gradient = 3.0 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
+  
+  return gradient;
+}
+
+
+// NEW.... congestion opp cost with minumum at rtep 
+// Energy cost + congestion cost = Opp cost 
+// Opp cost: abs cost = 0.5 : 1 
+// 
+
+double TreeRegression::crystal_v2oppabs_0p5_cost(double z, double y, double estimate)
+{
+  double opp_ene_cost = 0;
+  double opp_con_cost = 0;
+  double cost = 0;
+  
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+
+  if (y >= z){
+    opp_ene_cost =  (y - z) *  ( 1 - sigma_ene);
+  }else{
+    opp_ene_cost = (z - y) * sigma_ene;
+  }
+  
+  opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 0.5 * (opp_ene_cost + opp_con_cost)  + abs(estimate - y);
+  
+  return cost;
+}
+
+double TreeRegression::crystal_v2oppabs_0p5_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = 0;
+  double opp_con_gradient = 0;
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+  
+  
+  // if (y >= z)
+  // {
+  //   opp_gradient = (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  // }else
+  // {
+  //   opp_gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  // }
+  
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double abs_gradient = 0;
+  
+  if(estimate >= z){
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
+  }else{
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
+  }
+  
+  if(estimate >= y){
+    abs_gradient = 1.0;
+  }else{
     abs_gradient = -1.0;
   }
   
   
-  gradient = 2.0 * opp_gradient + abs_gradient;
+  gradient = 0.5 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
+  
+  return gradient;
+}
+
+
+// Opp cost: abs cost = 1 : 1 
+// 
+
+double TreeRegression::crystal_v2oppabs_1p0_cost(double z, double y, double estimate)
+{
+  double opp_ene_cost = 0;
+  double opp_con_cost = 0;
+  double cost = 0;
+  
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+  
+  if (y >= z){
+    opp_ene_cost =  (y - z) *  ( 1 - sigma_ene);
+  }else{
+    opp_ene_cost = (z - y) * sigma_ene;
+  }
+  
+  opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 1.0 * (opp_ene_cost + opp_con_cost)  + abs(estimate - y);
+  
+  return cost;
+}
+
+double TreeRegression::crystal_v2oppabs_1p0_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = 0;
+  double opp_con_gradient = 0;
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+  
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double abs_gradient = 0;
+  
+  if(estimate >= z){
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
+  }else{
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
+  }
+  
+  if(estimate >= y){
+    abs_gradient = 1.0;
+  }else{
+    abs_gradient = -1.0;
+  }
+  
+  
+  gradient = 1.0 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
+  
+  return gradient;
+}
+
+
+
+// Opp cost: abs cost = 2 : 1 
+// 
+double TreeRegression::crystal_v2oppabs_2p0_cost(double z, double y, double estimate)
+{
+  double opp_ene_cost = 0;
+  double opp_con_cost = 0;
+  double cost = 0;
+  
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+  
+  if (y >= z){
+    opp_ene_cost =  (y - z) *  ( 1 - sigma_ene);
+  }else{
+    opp_ene_cost = (z - y) * sigma_ene;
+  }
+  
+  opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 2.0 * (opp_ene_cost + opp_con_cost)  + abs(estimate - y);
+  
+  return cost;
+}
+
+double TreeRegression::crystal_v2oppabs_2p0_cost_gradient(double z, double y, double estimate)
+{
+  double gradient = 0;
+  double opp_con_gradient = 0;
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+  
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double abs_gradient = 0;
+  
+  if(estimate >= z){
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
+  }else{
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
+  }
+  
+  if(estimate >= y){
+    abs_gradient = 1.0;
+  }else{
+    abs_gradient = -1.0;
+  }
+  
+  
+  gradient = 2.0 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
   
   return gradient;
 }
@@ -547,55 +765,55 @@ double TreeRegression::crystal_oppabs_2p0_cost_gradient(double z, double y, doub
 
 // Opp cost: abs cost = 3 : 1 
 // 
-double TreeRegression::crystal_oppabs_3p0_cost(double z, double y, double estimate)
+double TreeRegression::crystal_v2oppabs_3p0_cost(double z, double y, double estimate)
 {
+  double opp_ene_cost = 0;
+  double opp_con_cost = 0;
   double cost = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
   
-  double opp_cost = 0;
-  if (y >= z)
-  {
-    opp_cost =  (y - z) *  ( 1 - sigma_da) + 10 * (sigma_rt - 0.5);
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
+  
+  if (y >= z){
+    opp_ene_cost =  (y - z) *  ( 1 - sigma_ene);
   }else{
-    opp_cost = (z - y) * sigma_da + 10 * (sigma_rt - 0.5); 
+    opp_ene_cost = (z - y) * sigma_ene;
   }
   
-  cost = 3.0 *  opp_cost + abs(estimate - y);
-    
-   return cost;
+  opp_con_cost = 10 * (sigma_con - 0.5);
+  
+  cost = 3.0 * (opp_ene_cost + opp_con_cost)  + abs(estimate - y);
+  
+  return cost;
 }
 
-double TreeRegression::crystal_oppabs_3p0_cost_gradient(double z, double y, double estimate)
+double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, double estimate)
 {
   double gradient = 0;
-  double sigma_da = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
-  double sigma_rt = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - y))));
+  double opp_con_gradient = 0;
+  double sigma_ene = 1.0 / (1 + std::exp( -4.0 / 25 * (estimate - z)));
+  double sigma_con = 1.0 / (1 + std::exp( -4.0 / 25 * (std::abs(estimate - z))));
   
-  double opp_gradient = 0 ;
-  double abs_gradient = 0; 
+  double opp_ene_gradient = (z - y) * sigma_ene * (1 - sigma_ene) * 4.0 / 25;
+  double abs_gradient = 0;
   
-  if (y >= z)
-  {
-    opp_gradient = (y - z) * (-1) * sigma_da * (1 - sigma_da) * 4.0 / 25;
-  }else
-  {
-    opp_gradient = (z - y) * sigma_da * (1 - sigma_da) * 4.0 / 25;
+  if(estimate >= z){
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * 1.0;
+  }else{
+    opp_con_gradient = 10 * sigma_con * (1 - sigma_con) * 4.0 / 25 * (-1.0);
   }
   
   if(estimate >= y){
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0/ 25 * 1.0;
     abs_gradient = 1.0;
   }else{
-    opp_gradient = opp_gradient + 10 * sigma_rt * (1 - sigma_rt) * 4.0/ 25 * (-1.0);
-    abs_gradient = -1.;
+    abs_gradient = -1.0;
   }
   
-  
-  gradient = 3.0 * opp_gradient + abs_gradient;
+  gradient = 3.0 * (opp_ene_gradient + opp_con_gradient) + abs_gradient;
   
   return gradient;
 }
+
 
 
 
@@ -635,6 +853,14 @@ double TreeRegression::crystal_oppabs_3p0_cost_gradient(double z, double y, doub
       return crystal_oppabs_2p0_cost_gradient(z, y, estimate);
     }else if(splitrule == CRYSTAL_OPPABS_3P0){ // 3.0 
       return crystal_oppabs_3p0_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_0P5){ // new 0.5
+      return crystal_v2oppabs_0p5_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_1P0){ // new 1. 0
+      return crystal_v2oppabs_1p0_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_2P0){ // new 2.0 
+      return crystal_v2oppabs_2p0_cost_gradient(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_3P0){ // new 3.0 
+      return crystal_v2oppabs_3p0_cost_gradient(z, y, estimate);
     }else{
       return crystal_squared_cost_gradient(z, y, estimate);
     }

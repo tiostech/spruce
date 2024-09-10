@@ -108,6 +108,19 @@ namespace spruce
     double crystal_oppabs_3p0_cost(double z, double y, double estimate);
     double crystal_oppabs_3p0_cost_gradient(double z, double y, double estimate);
     
+    // new opp cost
+    double crystal_v2oppabs_0p5_cost(double z, double y, double estimate);
+    double crystal_v2oppabs_0p5_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_v2oppabs_1p0_cost(double z, double y, double estimate);
+    double crystal_v2oppabs_1p0_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_v2oppabs_2p0_cost(double z, double y, double estimate);
+    double crystal_v2oppabs_2p0_cost_gradient(double z, double y, double estimate);
+    
+    double crystal_v2oppabs_3p0_cost(double z, double y, double estimate);
+    double crystal_v2oppabs_3p0_cost_gradient(double z, double y, double estimate);
+    
     
     
 
