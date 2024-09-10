@@ -861,8 +861,12 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
       return crystal_v2oppabs_2p0_cost_gradient(z, y, estimate);
     }else if(splitrule == CRYSTAL_V2OPPABS_3P0){ // new 3.0 
       return crystal_v2oppabs_3p0_cost_gradient(z, y, estimate);
-    }else{
+    }else if(splitrule == CRYSTAL_SQUARED){
       return crystal_squared_cost_gradient(z, y, estimate);
+    }else{
+      std::cout << "split rule does not exist.\n";
+      std::cout << splitrule;
+      return 0;
     }
   }
 
@@ -896,8 +900,20 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
       return crystal_oppabs_2p0_cost(z, y, estimate);
     }else if(splitrule == CRYSTAL_OPPABS_3P0){
       return crystal_oppabs_3p0_cost(z, y, estimate);
-    }else{
+    }else if(splitrule == CRYSTAL_V2OPPABS_0P5){ // # New 0.5 
+      return crystal_v2oppabs_0p5_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_1P0){ // # New 1.0
+      return crystal_v2oppabs_1p0_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_2P0){ // # New 2.0 
+      return crystal_v2oppabs_2p0_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_V2OPPABS_3P0){ // # New 3.0 
+      return crystal_v2oppabs_3p0_cost(z, y, estimate);
+    }else if(splitrule == CRYSTAL_SQUARED){
       return crystal_squared_cost(z, y, estimate);
+    }else{
+      std::cout << "split rule does not exist.\n";
+      std::cout << splitrule;
+      return 0;
     }
   }
 
