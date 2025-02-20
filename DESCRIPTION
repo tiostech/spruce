@@ -1,7 +1,7 @@
 Package: spruce
 Type: Package
 Title: A Fast Implementation of Random Forests
-Version: 0.17.5
+Version: 0.17.6
 Date: 2024-09-10
 Author: Marvin N. Wright [aut, cre], Stefan Wager [ctb], Philipp Probst [ctb]
 Maintainer: Marvin N. Wright <cran@wrig.de>
@@ -22,6 +22,6 @@ URL: http://imbs-hl.github.io/ranger/,
         https://github.com/imbs-hl/ranger
 BugReports: https://github.com/imbs-hl/ranger/issues
 NeedsCompilation: yes
-Packaged: 2023-11-10 18:34:21 UTC; wright
+Packaged: 2024-09-10 21:49:22 UTC; wpeng
 Repository: CRAN
 Date/Publication: 2023-11-12 20:13:19 UTC
