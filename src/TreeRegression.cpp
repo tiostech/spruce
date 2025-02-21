@@ -2811,8 +2811,32 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
     size_t num_samples_node = end_pos[nodeID] - start_pos[nodeID];
 
     double best_decrease = decrease;
-    if (splitrule != MAXSTAT)
-    {
+    
+    if(splitrule == CRYSTAL_OPPABS_3P0){
+      
+      std::vector<double> parent_y, parent_z;
+      for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
+      {
+        size_t sampleID = sampleIDs[pos];
+        double value = data->get_x(sampleID, varID);
+        double y = data->get_y(sampleID, 0);
+        double z = data->get_z(sampleID, 0);
+        parent_y.push_back(y);
+        parent_z.push_back(z);
+      }
+      
+      // relabel y to w  
+      double parent_estimate = crystal_cost_fit(parent_z, parent_y);
+      std::vector<double> parent_g = crystal_cost_relabel(parent_z, parent_y, parent_estimate);
+      double sum_node = 0;
+      for (size_t i = 0; i < parent_g.size(); ++i)
+      {
+        sum_node += parent_g[i]; // relabel
+      }
+      double impurity_node = (sum_node * sum_node / (double)num_samples_node);
+      std::cout << "TreeRegression::addImpurityImportance CRYSTAL_OPPABS_3P0" << "\n";
+      
+    }else if (splitrule != MAXSTAT){
       double sum_node = 0;
       for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
       {
@@ -2825,9 +2849,9 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
       // Account for the regularization
       regularize(impurity_node, varID);
 
-      best_decrease = decrease - impurity_node;
+      best_decrease = decrease - impurity_node; // sum_left^2/n + sum_right^2/n - sum_parent^2/n
     }
-
+    
     // No variable importance for no split variables
     size_t tempvarID = data->getUnpermutedVarID(varID);
 
