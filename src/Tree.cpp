@@ -361,7 +361,7 @@ namespace spruce
   void Tree::computePermutationImportance(std::vector<double> &forest_importance, std::vector<double> &forest_variance,
                                           std::vector<double> &forest_importance_casewise)
   {
-
+    std::cout << "Tree::computePermutationImportance" << "\n";
     size_t num_independent_variables = data->getNumCols();
 
     // Compute normal prediction accuracy for each tree. Predictions already computed..
@@ -405,7 +405,7 @@ namespace spruce
       if (isused)
       {
         // Permute and compute prediction accuracy again for this permutation and save difference
-        permuteAndPredictOobSamples(i, permutations);
+        permuteAndPredictOobSamples(i, permutations); // update prediction_terminal_nodeIDs
         double accuracy_permuted;
         if (importance_mode == IMP_PERM_CASEWISE)
         {

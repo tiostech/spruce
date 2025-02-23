@@ -985,7 +985,7 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
   return best_estimate; // Return the best estimate of the minimum
 }
 
-  double TreeRegression::crystal_cost_fit(size_t nodeID)
+double TreeRegression::crystal_cost_fit(size_t nodeID)
   {
     size_t num_samples_in_node = end_pos[nodeID] - start_pos[nodeID];
     // Precompute y and z values
@@ -1696,7 +1696,11 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
     }
     if (pure)
     {
-      split_values[nodeID] = pure_value_y;
+      if(splitrule == ABSOLUTE){
+        split_values[nodeID] = absolute_cost_fit(nodeID);
+      } else{
+        split_values[nodeID] = crystal_cost_fit(nodeID);
+      }
       return true;
     }
     
@@ -1827,23 +1831,54 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
   {
 
     size_t num_predictions = prediction_terminal_nodeIDs.size();
-    double sum_of_squares = 0;
-    for (size_t i = 0; i < num_predictions; ++i)
-    {
-      size_t terminal_nodeID = prediction_terminal_nodeIDs[i];
-      double predicted_value = split_values[terminal_nodeID];
-      double real_value = data->get_y(oob_sampleIDs[i], 0);
-      if (predicted_value != real_value)
+    
+    if (splitrule == CRYSTAL_OPPABS_3P0 || splitrule == CRYSTAL_SQUARED) {
+      double sum_of_cost = 0;
+      for (size_t i = 0; i < num_predictions; ++i)
       {
-        double diff = (predicted_value - real_value) * (predicted_value - real_value);
+        size_t terminal_nodeID = prediction_terminal_nodeIDs[i];
+        double predicted_value = split_values[terminal_nodeID];
+        
+        // std::cout <<  "terminal_nodeID id = " << terminal_nodeID << "\n";
+        // std::cout <<  "left child id" << child_nodeIDs[0][terminal_nodeID] << "\n";
+        // std::cout <<  "right child id" << child_nodeIDs[1][terminal_nodeID] << "\n";
+        // 
+        // std::cout <<  "size  = " << end_pos[terminal_nodeID] - start_pos[terminal_nodeID]  << "\n";
+        // double predicted_value = crystal_cost_fit(terminal_nodeID);
+        // std::cout <<  "predicted_value  = " << predicted_value << "\n";
+        
+        double y_value = data->get_y(oob_sampleIDs[i], 0);
+        double z_value = data->get_z(oob_sampleIDs[i], 0);
+  
+        double diff = crystal_cost(z_value, y_value, predicted_value); 
         if (prediction_error_casewise)
         {
-          (*prediction_error_casewise)[i] = diff;
-        }
-        sum_of_squares += diff;
+            (*prediction_error_casewise)[i] = diff;
+          }
+        sum_of_cost += diff; 
       }
+      std::cout << "TreeRegression::computePredictionAccuracyInternal Crystal loss" << "\n";
+      return(-sum_of_cost / (double)num_predictions);
+      
+    }else{
+      double sum_of_squares = 0;
+      for (size_t i = 0; i < num_predictions; ++i)
+      {
+        size_t terminal_nodeID = prediction_terminal_nodeIDs[i];
+        double predicted_value = split_values[terminal_nodeID];
+        double real_value = data->get_y(oob_sampleIDs[i], 0);
+        if (predicted_value != real_value)
+        {
+          double diff = (predicted_value - real_value) * (predicted_value - real_value); 
+          if (prediction_error_casewise)
+          {
+            (*prediction_error_casewise)[i] = diff;
+          }
+          sum_of_squares += diff; 
+        }
+      }
+      return (1.0 - sum_of_squares / (double)num_predictions);
     }
-    return (1.0 - sum_of_squares / (double)num_predictions);
   }
 
   bool TreeRegression::findBestSplit(size_t nodeID, std::vector<size_t> &possible_split_varIDs)
@@ -2812,13 +2847,12 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
 
     double best_decrease = decrease;
     
-    if(splitrule == CRYSTAL_OPPABS_3P0){
+    if (splitrule == CRYSTAL_OPPABS_3P0 || splitrule == CRYSTAL_SQUARED) {
       
       std::vector<double> parent_y, parent_z;
       for (size_t pos = start_pos[nodeID]; pos < end_pos[nodeID]; ++pos)
       {
         size_t sampleID = sampleIDs[pos];
-        double value = data->get_x(sampleID, varID);
         double y = data->get_y(sampleID, 0);
         double z = data->get_z(sampleID, 0);
         parent_y.push_back(y);
@@ -2831,10 +2865,11 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
       double sum_node = 0;
       for (size_t i = 0; i < parent_g.size(); ++i)
       {
-        sum_node += parent_g[i]; // relabel
+        sum_node += parent_g[i]; // relabeled response
       }
       double impurity_node = (sum_node * sum_node / (double)num_samples_node);
-      std::cout << "TreeRegression::addImpurityImportance CRYSTAL_OPPABS_3P0" << "\n";
+      std::cout << "TreeRegression::addImpurityImportance" << "\n";
+      best_decrease = decrease - impurity_node; // sum_left^2/n + sum_right^2/n - sum_parent^2/n
       
     }else if (splitrule != MAXSTAT){
       double sum_node = 0;
