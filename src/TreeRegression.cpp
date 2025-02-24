@@ -939,10 +939,16 @@ double TreeRegression::crystal_v2oppabs_3p0_cost_gradient(double z, double y, do
 
   double TreeRegression::crystal_cost_fit(std::vector<double> z_values, std::vector<double> y_values)
   {
+    
+  // Ternary search is typically used to find the minimum of a unimodal function.
+  // However, in this case, the sum of crystal costs is not guaranteed to be unimodal.
+  // As the unimodal assumption is violated, the algorithm will likely only find a local minimum, not a global one.
+  // This isn't necessarily a problem, as a global minimum at each step is not required for a greedy algorithm like Tree.
+  // Additionally, the optimal solution might not lie within the initial range of min_y and max_y.
+  // But in regression, it may be reasonable to constrain the fitted value to stay within the min_y and max_y bounds.
   
   int num_samples_in_node = y_values.size();
-  
-  // Terary_search to find global minimum
+
   auto minElement = std::min_element(y_values.begin(), y_values.end());
   double left = *minElement;
   auto maxElement = std::max_element(y_values.begin(), y_values.end());
