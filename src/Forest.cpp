@@ -309,7 +309,6 @@ void Forest::run(bool verbose, bool compute_oob_error) {
       computePredictionError();
     }
     
-    std::cout << "Forest::run IMP_PERM_RAW" << "\n";
     if (importance_mode == IMP_PERM_BREIMAN || importance_mode == IMP_PERM_LIAW || importance_mode == IMP_PERM_RAW
         || importance_mode == IMP_PERM_CASEWISE) {
       if (verbose && verbose_out) {
@@ -606,7 +605,7 @@ void Forest::computePredictionError() {
 }
 
 void Forest::computePermutationImportance() {
-
+  std::cout << "Forest::computePermutationImportance" << "\n";
   // Compute tree permutation importance in multiple threads
   progress = 0;
 #ifdef R_BUILD

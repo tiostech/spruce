@@ -112,96 +112,13 @@ namespace spruce
     }
   }
 
-  // void Tree::grow(std::vector<double> *variable_importance)
-  // {
-  //   // Allocate memory for tree growing
-  //   allocateMemory();
-  // 
-  //   this->variable_importance = variable_importance; // Variable importance for all variables, update after splitting
-  // 
-  //   // Bootstrap, dependent if weighted or not and with or without replacement
-  //   if (!case_weights->empty())
-  //   {
-  //     if (sample_with_replacement)
-  //     {
-  //       bootstrapWeighted();
-  //     }
-  //     else
-  //     {
-  //       bootstrapWithoutReplacementWeighted();
-  //     }
-  //   }
-  //   else if (sample_fraction->size() > 1)
-  //   {
-  //     if (sample_with_replacement)
-  //     {
-  //       bootstrapClassWise();
-  //     }
-  //     else
-  //     {
-  //       bootstrapWithoutReplacementClassWise();
-  //     }
-  //   }
-  //   else if (!manual_inbag->empty())
-  //   {
-  //     setManualInbag();
-  //   }
-  //   else
-  //   {
-  //     if (sample_with_replacement)
-  //     {
-  //       bootstrap();
-  //     }
-  //     else
-  //     {
-  //       bootstrapWithoutReplacement();
-  //     }
-  //   }
-  // 
-  //   // Init start and end positions
-  //   start_pos[0] = 0;              // node_ID
-  //   end_pos[0] = sampleIDs.size(); // node_ID // All sampleIDs in the tree, will be re-ordered while splitting
-  // 
-  //   // While not all nodes terminal, split next node
-  //   size_t num_open_nodes = 1;
-  //   size_t i = 0;
-  //   depth = 0;
-  //   while (num_open_nodes > 0)
-  //   {
-  //     // Split node
-  //     bool is_terminal_node = splitNode(i); // node_ID, split node or not 
-  //     if (is_terminal_node)
-  //     {
-  //       --num_open_nodes;
-  //     }
-  //     else
-  //     {
-  //       ++num_open_nodes;
-  //       if (i >= last_left_nodeID)
-  //       {
-  //         // If new level, increase depth
-  //         // (left_node saves left-most node in current level, new level reached if that node is splitted)
-  //         last_left_nodeID = split_varIDs.size() - 2;
-  //         ++depth;
-  //       }
-  //     }
-  //     ++i;
-  //   }
-  //   
-  //   std::cout << ".......done grow\n";
-  //   // Delete sampleID vector to save memory
-  //   sampleIDs.clear();
-  //   sampleIDs.shrink_to_fit();
-  //   cleanUpInternal();
-  // }
-
   void Tree::grow(std::vector<double> *variable_importance)
   {
     // Allocate memory for tree growing
     allocateMemory();
-    
+
     this->variable_importance = variable_importance; // Variable importance for all variables, update after splitting
-    
+
     // Bootstrap, dependent if weighted or not and with or without replacement
     if (!case_weights->empty())
     {
@@ -240,44 +157,128 @@ namespace spruce
         bootstrapWithoutReplacement();
       }
     }
-    
+
     // Init start and end positions
     start_pos[0] = 0;              // node_ID
     end_pos[0] = sampleIDs.size(); // node_ID // All sampleIDs in the tree, will be re-ordered while splitting
+    is_terminal_node[0] = false;
     
     // While not all nodes terminal, split next node
     size_t num_open_nodes = 1;
     size_t i = 0;
     depth = 0;
-    
     while (num_open_nodes > 0)
     {
-      
-      // find the node where the test data is in 
       // Split node
-      bool is_terminal_node = splitNode(i); // node_ID, split node or not 
-      if (is_terminal_node){
+      bool is_leaf = splitNode(i); // node_ID, split node or not
+      if (is_leaf)
+      {
         --num_open_nodes;
       }
-      else{
-        size_t split_varID = split_varIDs[i];
-        double split_value = split_values[i];
-        double test_value = data -> get_test_x(0, split_varID);
-        // std::cout << "split_varID = " << split_varID << ": split_value = " << split_value << ", test_value = " << test_value << "\n";
-        if(test_value <= split_value){
-          i = child_nodeIDs[0][i];
-        }else{
-          i = child_nodeIDs[1][i];
+      else
+      {
+        ++num_open_nodes;
+        if (i >= last_left_nodeID)
+        {
+          // If new level, increase depth
+          // (left_node saves left-most node in current level, new level reached if that node is splitted)
+          last_left_nodeID = split_varIDs.size() - 2;
+          ++depth;
         }
-        ++depth;
       }
+      ++i;
     }
-    // std::cout << "depth = " << depth << "....... done \n";
+
+    // std::cout << ".......done grow\n";
     // Delete sampleID vector to save memory
     sampleIDs.clear();
     sampleIDs.shrink_to_fit();
     cleanUpInternal();
-}
+  }
+
+//   void Tree::grow(std::vector<double> *variable_importance)
+//   {
+//     // Allocate memory for tree growing
+//     allocateMemory();
+//     
+//     this->variable_importance = variable_importance; // Variable importance for all variables, update after splitting
+//     
+//     // Bootstrap, dependent if weighted or not and with or without replacement
+//     if (!case_weights->empty())
+//     {
+//       if (sample_with_replacement)
+//       {
+//         bootstrapWeighted();
+//       }
+//       else
+//       {
+//         bootstrapWithoutReplacementWeighted();
+//       }
+//     }
+//     else if (sample_fraction->size() > 1)
+//     {
+//       if (sample_with_replacement)
+//       {
+//         bootstrapClassWise();
+//       }
+//       else
+//       {
+//         bootstrapWithoutReplacementClassWise();
+//       }
+//     }
+//     else if (!manual_inbag->empty())
+//     {
+//       setManualInbag();
+//     }
+//     else
+//     {
+//       if (sample_with_replacement)
+//       {
+//         bootstrap();
+//       }
+//       else
+//       {
+//         bootstrapWithoutReplacement();
+//       }
+//     }
+//     
+//     // Init start and end positions
+//     start_pos[0] = 0;              // node_ID
+//     end_pos[0] = sampleIDs.size(); // node_ID // All sampleIDs in the tree, will be re-ordered while splitting
+//     
+//     // While not all nodes terminal, split next node
+//     size_t num_open_nodes = 1;
+//     size_t i = 0;
+//     depth = 0;
+//     
+//     while (num_open_nodes > 0)
+//     {
+//       
+//       // find the node where the test data is in 
+//       // Split node
+//       bool is_leaf = splitNode(i); // node_ID, split node or not 
+//       if (is_leaf){
+//         --num_open_nodes;
+//       }
+//       else{
+//         size_t split_varID = split_varIDs[i];
+//         double split_value = split_values[i];
+//         double test_value = data -> get_test_x(0, split_varID);
+//         // std::cout << "split_varID = " << split_varID << ": split_value = " << split_value << ", test_value = " << test_value << "\n";
+//         if(test_value <= split_value){
+//           i = child_nodeIDs[0][i];
+//         }else{
+//           i = child_nodeIDs[1][i];
+//         }
+//         ++depth;
+//       }
+//     }
+//     // std::cout << "depth = " << depth << "....... done \n";
+//     // Delete sampleID vector to save memory
+//     sampleIDs.clear();
+//     sampleIDs.shrink_to_fit();
+//     cleanUpInternal();
+// }
 
   void Tree::predict(const Data *prediction_data, bool oob_prediction)
   {
@@ -361,7 +362,6 @@ namespace spruce
   void Tree::computePermutationImportance(std::vector<double> &forest_importance, std::vector<double> &forest_variance,
                                           std::vector<double> &forest_importance_casewise)
   {
-    std::cout << "Tree::computePermutationImportance" << "\n";
     size_t num_independent_variables = data->getNumCols();
 
     // Compute normal prediction accuracy for each tree. Predictions already computed..
@@ -503,6 +503,7 @@ namespace spruce
     if (stop)
     {
       // Terminal node
+      is_terminal_node[nodeID] = true;
       return true;
     }
     // not terminal node 
@@ -584,6 +585,14 @@ namespace spruce
     end_pos[left_child_nodeID] = start_pos[right_child_nodeID];
     end_pos[right_child_nodeID] = end_pos[nodeID];
     
+    double test_value = data->get_test_x(0, split_varID);
+    if(test_value <= split_value){
+      is_terminal_node[left_child_nodeID] = false; // no more splitting 
+    }else{
+      is_terminal_node[right_child_nodeID] = false;
+    }
+    
+    
     // std::cout << "after asignment \n";
     // for (size_t s = 0; s < sampleIDs.size(); ++s) {
     //   std::cout << sampleIDs[s] << " ";
@@ -605,6 +614,7 @@ namespace spruce
     child_nodeIDs[1].push_back(0); // node_ID
     start_pos.push_back(0);        // node_ID
     end_pos.push_back(0);          // node_ID
+    is_terminal_node.push_back(true);
 
     if (save_node_stats)
     {

@@ -202,6 +202,7 @@ public:
   // For each node a vector with start and end positions
   std::vector<size_t> start_pos;
   std::vector<size_t> end_pos;
+  std::vector<bool> is_terminal_node;
 
   // IDs of OOB individuals, sorted
   std::vector<size_t> oob_sampleIDs;
