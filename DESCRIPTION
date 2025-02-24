@@ -1,27 +1,15 @@
 Package: spruce
 Type: Package
 Title: A Fast Implementation of Random Forests
-Version: 0.17.6
-Date: 2024-09-10
-Author: Marvin N. Wright [aut, cre], Stefan Wager [ctb], Philipp Probst [ctb]
-Maintainer: Marvin N. Wright <cran@wrig.de>
-Description: A fast implementation of Random Forests, particularly suited for high
-          dimensional data. Ensembles of classification, regression, survival and
-          probability prediction trees are supported. Data from genome-wide association
-          studies can be analyzed efficiently. In addition to data frames, datasets of
-          class 'gwaa.data' (R package 'GenABEL') and 'dgCMatrix' (R package 'Matrix') 
-          can be directly analyzed.
+Version: 1.0.0
+Date: 2025-02-24
+Author: Wei Peng [aut, cre], Stephen Yin [ctb, cre], Parke Aiken [ctb]
+Maintainer: Wei Peng <wpeng@tioscapital.com>; Stephen Yin <syin@tioscapital.com>
+Description: A high-performance implementation of Random Forests, optimized for high-dimensional data. Supports ensembles of regression with different splitting rules.
 License: GPL-3
 Imports: Rcpp (>= 0.11.2), Matrix
 LinkingTo: Rcpp, RcppEigen
 Depends: R (>= 3.1)
-Suggests: survival, testthat
 Encoding: UTF-8
 RoxygenNote: 7.3.2
-URL: http://imbs-hl.github.io/ranger/,
-        https://github.com/imbs-hl/ranger
-BugReports: https://github.com/imbs-hl/ranger/issues
 NeedsCompilation: yes
-Packaged: 2024-09-10 21:49:22 UTC; wpeng
-Repository: CRAN
-Date/Publication: 2023-11-12 20:13:19 UTC
